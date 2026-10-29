@@ -2,6 +2,7 @@ import { api } from '../api.js';
 import { jerseySvg, teamJersey } from '../jersey.js';
 import { initPage } from '../layout.js';
 import { newsCard } from '../news-card.js';
+import { crest, productCard, productSkeleton } from '../product-card.js';
 import { $, $$, emptyState, formatCurrency, formatDate, html, icon, raw, toast } from '../ui.js';
 
 initPage();
@@ -16,6 +17,10 @@ const loadSafely = async (path, query) => {
     return null;
   }
 };
+
+// Danh sách sản phẩm tải riêng để hiện skeleton trong lúc chờ
+renderProducts('[data-new-season]', { featured: 'true', sort: 'newest', limit: 4 });
+renderProducts('[data-best-sellers]', { sort: 'best_selling', limit: 4 });
 
 const [teams, categories, promotions, vouchers, news] = await Promise.all([
   loadSafely('/teams'),
@@ -35,6 +40,15 @@ renderCustomizer(showcase);
 renderVouchers(vouchers ?? []);
 renderNews(news ?? []);
 
+async function renderProducts(selector, query) {
+  const grid = $(selector);
+  grid.innerHTML = productSkeleton(4);
+  const products = await loadSafely('/products', query);
+  grid.innerHTML = products?.length
+    ? products.map(productCard).join('')
+    : `<div style="grid-column:1/-1">${emptyState('shirt', 'Chưa có sản phẩm')}</div>`;
+}
+
 function renderTeams(list) {
   const scroller = $('[data-teams]');
   if (!list.length) {
@@ -47,7 +61,7 @@ function renderTeams(list) {
         <a class="team-card" href="/products.html?team=${team.slug}">
           <div class="jersey-box">
             ${raw(teamJersey(team))}
-            <span class="team-crest" aria-hidden="true">${team.shortName ?? team.name.slice(0, 3)}</span>
+            <span class="team-crest" aria-hidden="true">${raw(crest(team))}</span>
           </div>
           <span class="team-name">${team.name}</span>
         </a>`,

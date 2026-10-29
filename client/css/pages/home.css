@@ -248,6 +248,16 @@
   color: var(--c-ink);
 }
 
+.team-crest {
+  overflow: hidden;
+}
+
+.team-crest img {
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+}
+
 .team-name {
   font-size: .6875rem;
   font-weight: 700;
