@@ -68,7 +68,6 @@ function headerHtml() {
         <div class="header-actions">
           <a class="icon-btn" href="/products.html" aria-label="Tìm kiếm">${raw(icon('search'))}</a>
           <span data-account>${raw(accountMenu())}</span>
-          <a class="icon-btn hide-mobile" href="/account.html#wishlist" aria-label="Yêu thích">${raw(icon('heart'))}</a>
           <a class="icon-btn" href="/cart.html" aria-label="Giỏ hàng">${raw(icon('bag'))}<span class="cart-count" data-cart-count hidden>0</span></a>
         </div>
       </div>

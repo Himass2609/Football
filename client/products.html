@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cửa hàng — JERSEY</title>
+  <meta name="description" content="Áo đấu câu lạc bộ, đội tuyển, retro, đồ tập và phụ kiện bóng đá chính hãng.">
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +15,9 @@
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/layout.css">
-  <script type="module" src="/js/pages/static.js"></script>
+  <link rel="stylesheet" href="/css/product.css">
+  <link rel="stylesheet" href="/css/pages/shop.css">
+  <script type="module" src="/js/pages/products.js"></script>
 </head>
 <body>
   <div id="site-header"></div>
@@ -22,16 +25,45 @@
   <main>
     <section class="page-banner">
       <div class="container">
-        <p class="eyebrow">Phase 2</p>
-        <h1 class="display">Cửa hàng</h1>
+        <nav class="breadcrumb" aria-label="Breadcrumb" data-breadcrumb><a href="/">Trang chủ</a><span>/</span><span>Cửa hàng</span></nav>
+        <h1 class="display" data-title>Cửa hàng</h1>
+        <p class="text-muted-c mt-2" data-subtitle>Áo đấu chính hãng của các câu lạc bộ và đội tuyển hàng đầu.</p>
       </div>
     </section>
-    <section class="section">
-      <div class="container">
-        <div class="empty">
-          <div class="empty-icon" data-icon="shirt" data-icon-size="24"></div>
-          <p class="empty-title">Danh sách sản phẩm, tìm kiếm và bộ lọc đang được xây dựng ở Phase 2.</p>
-          <a class="btn btn-dark mt-3" href="/" data-icon-after="arrow-right">Về trang chủ</a>
+
+    <section class="section-tight">
+      <div class="container shop-layout">
+        <aside class="filters" data-filters aria-label="Bộ lọc sản phẩm">
+          <div class="filters-head">
+            <strong>Bộ lọc</strong>
+            <button class="icon-btn" type="button" data-filters-close aria-label="Đóng bộ lọc" data-icon="x"></button>
+          </div>
+          <div data-filter-groups></div>
+        </aside>
+        <div class="filters-backdrop" data-filters-close hidden></div>
+
+        <div>
+          <div class="shop-toolbar">
+            <button class="btn btn-outline btn-sm filter-toggle" type="button" data-filters-open data-icon="sliders">Bộ lọc</button>
+            <label class="search-box">
+              <span class="visually-hidden">Tìm sản phẩm</span>
+              <span data-icon="search"></span>
+              <input class="input" type="search" placeholder="Tìm áo, đội bóng, cầu thủ..." data-search>
+            </label>
+            <label>
+              <span class="visually-hidden">Sắp xếp</span>
+              <select class="select" data-sort>
+                <option value="newest">Mới nhất</option>
+                <option value="best_selling">Bán chạy</option>
+                <option value="price_asc">Giá tăng dần</option>
+                <option value="price_desc">Giá giảm dần</option>
+                <option value="name_asc">Tên A → Z</option>
+              </select>
+            </label>
+          </div>
+          <div class="result-line" data-result-line aria-live="polite"></div>
+          <div class="product-grid" data-grid></div>
+          <div class="pagination shop-pagination" data-pagination></div>
         </div>
       </div>
     </section>
