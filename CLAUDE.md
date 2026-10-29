@@ -62,14 +62,17 @@ Không tự ý thêm framework frontend (React/Vue/Tailwind) — đề tài yêu
     icons-auto.js             # data-icon / data-icon-after trong HTML
     jersey.js                 # vẽ áo SVG theo màu đội (ảnh minh họa khi chưa có ảnh thật)
     news-card.js  auth-page.js
+    product-card.js           # thẻ sản phẩm, priceHtml(), productArt() (áo minh họa theo màu đội/biến thể)
     /pages/*.js               # 1 file / trang storefront
     /admin/shell.js           # khung admin + guard ADMIN
     /admin/crud.js            # createCrudPage(), openFormDialog() — CRUD khai báo bằng config
     /admin/marketing.js       # phần chung khuyến mãi/voucher
+    /admin/product-fields.js  # trường form sản phẩm dùng chung (dialog tạo + tab Thông tin)
+    /admin/stock.js           # dialog nhập / điều chỉnh kho
     /admin/pages/*.js         # 1 file / trang admin
   index.html  products.html  cart.html  login.html  register.html  forgot-password.html
-  account.html  news.html  news-detail.html  404.html
-  /admin/{index,users,roles,master-data,promotions,vouchers,news,settings}.html
+  account.html  news.html  news-detail.html  product.html  404.html
+  /admin/{index,users,roles,products,product-edit,inventory,master-data,promotions,vouchers,news,settings}.html
         # master-data.html?entity=categories|brands|leagues|teams|product-types|sizes|colors|news-categories
 /server
   /src
@@ -117,6 +120,7 @@ Bảng trong docx là bản nháp; triển khai theo mô hình đã chuẩn hóa
 - **Order**(id, orderCode unique, customerId, status, paymentStatus, paymentMethod, subtotal, discountAmount, shippingFee, total, voucherId?, shipping snapshot: receiverName/phone/address, note, createdAt)
 - **OrderDetail**(orderId, variantId, productName, sizeName, colorName, unitPrice, quantity, lineTotal) — **snapshot**, không join lại Product để hiển thị lịch sử
 - **OrderStatusHistory**(orderId, fromStatus, toStatus, changedBy, changedAt)
+- **InventoryLog**(variantId, change, stockAfter, reason: IMPORT/ADJUST/ORDER/CANCEL, note, orderId?, createdById, createdAt) — mọi thay đổi tồn kho đều ghi log
 - **Payment**(orderId, method: COD/ONLINE, amount, status: PENDING/SUCCESS/FAILED, transactionRef, paidAt)
 - **Promotion**, **Voucher**(code unique, type: PERCENT/FIXED, value, maxDiscount, minOrderValue, usageLimit, usedCount, startAt, endAt, scope: ALL/CATEGORY/PRODUCT, isActive)
 - **Review**(customerId, productId, orderId, rating 1–5, content, images, createdAt) — unique(customerId, productId, orderId)
@@ -133,7 +137,10 @@ Bảng trong docx là bản nháp; triển khai theo mô hình đã chuẩn hóa
 3. **Chống tranh chấp tồn kho**: trừ kho bằng câu lệnh có điều kiện trong transaction
    `UPDATE ProductVariant SET stockQuantity = stockQuantity - :q WHERE id = :id AND stockQuantity >= :q` — nếu affected = 0 thì rollback toàn bộ đơn.
 4. **Price snapshot**: giá, tên sản phẩm, size, màu lưu vào `OrderDetail` lúc đặt. Admin sửa giá không ảnh hưởng đơn cũ.
-5. **Giá tính ở server**. Không bao giờ tin `price/total` gửi từ client.
+5. **Giá tính ở server** (`pricing.service.js`). Không bao giờ tin `price/total` gửi từ client.
+   Giá niêm yết = giá biến thể ?? giá gốc; giá hiện tại = giá biến thể ?? giá sale ?? giá gốc; sau đó áp **một** khuyến mãi đang chạy có lợi nhất (ALL / CATEGORY gồm danh mục cha / TEAM / PRODUCT), giảm % làm tròn đến 1.000₫.
+   Danh sách công khai lọc ở DB rồi tính giá → lọc giá / sắp xếp / phân trang trong ứng dụng (đủ cho vài nghìn SP).
+5b. **Sản phẩm**: tạo mới luôn là DRAFT; chỉ mở bán (ACTIVE) khi có ≥ 1 biến thể đang bán; tắt hết biến thể → tự về DRAFT. Biến thể đã có trong đơn/giỏ thì chỉ được tắt, không xóa. Giảm kho dùng UPDATE có điều kiện `stock >= số giảm`.
 6. **Vòng đời đơn hàng** (chỉ cho phép các chuyển tiếp này, ghi `OrderStatusHistory`):
    ```
    PENDING → CONFIRMED → PROCESSING → SHIPPING → DELIVERED
@@ -272,12 +279,13 @@ npm run dev                       # nodemon → http://localhost:3000 (phục v�
 - DB dev: SQL Server Express `localhost:1433`, database `JerseyShop` (+ `JerseyShop_shadow` cho migrate), login riêng `jersey_app`.
 - SMTP để trống → mã OTP quên mật khẩu được **in ra console** server.
 - Tài khoản seed: `admin@jersey.vn / Admin@123`, `customer@jersey.vn / Customer@123` (chỉ dùng dev; trang đăng nhập có nút điền nhanh).
-- Seed hiện có: 2 vai trò, 15 quyền, 8 danh mục, 6 thương hiệu, 7 giải, 22 đội (có màu áo), 6 loại SP, 11 size, 12 màu, 3 voucher, 2 khuyến mãi, 3 bài viết. Sản phẩm sẽ seed ở Phase 2.
+- Seed hiện có: 2 vai trò, 15 quyền, 8 danh mục, 6 thương hiệu, 7 giải, 22 đội (có màu áo), 6 loại SP, 11 size, 12 màu, 3 voucher, 2 khuyến mãi, 3 bài viết, 44 sản phẩm / 218 biến thể (có hàng hết & sắp hết để demo).
 
 ## Trạng thái
 - ✅ **Phase 1** xong: Auth (đăng ký/đăng nhập/đăng xuất/đổi mật khẩu/quên mật khẩu OTP), Profile, RBAC, quản lý tài khoản, toàn bộ master data, Promotion, Voucher, News + chuyên mục, cấu hình cửa hàng, upload ảnh, trang chủ, tin tức, admin.
-- ⏭️ **Phase 2**: Product + Image + Variant + Inventory, `products.html` (tìm kiếm/lọc/sắp xếp/phân trang), `product.html`, admin sản phẩm & tồn kho, nối "New Season / Best Sellers" vào trang chủ.
-- Trang giữ chỗ cho Phase sau: `products.html`, `cart.html`, tab Đơn hàng/Sổ địa chỉ trong `account.html`.
+- ✅ **Phase 2** xong (nhánh `feature/phase2-product`): Product + Variant + Image + Inventory (+ InventoryLog), tính giá khuyến mãi, `products.html` (tìm kiếm/lọc/sắp xếp/phân trang, URL giữ bộ lọc), `product.html` (chọn size/màu, tồn kho theo biến thể), admin sản phẩm / sửa sản phẩm / tồn kho, mục New Season & Best Sellers trên trang chủ.
+- ⏭️ **Phase 3**: Address, Cart, Checkout, Order (transaction trừ kho + InventoryLog reason ORDER), Payment, vòng đời đơn, hủy đơn (hoàn kho reason CANCEL), Review, Dashboard.
+- Trang giữ chỗ cho Phase sau: `cart.html`, nút "Thêm vào giỏ hàng" ở `product.html` (đang chỉ báo toast), tab Đơn hàng/Sổ địa chỉ trong `account.html`.
 
 ---
 
