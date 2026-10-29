@@ -1,0 +1,80 @@
+/* Design tokens — nguồn duy nhất cho màu, chữ, khoảng cách. Không hard-code giá trị ở nơi khác. */
+:root {
+  /* Màu */
+  --c-ink: #0B1220;
+  --c-ink-2: #1A2233;
+  --c-ink-3: #2A3346;
+  --c-text: #1F2937;
+  --c-muted: #6B7280;
+  --c-subtle: #9CA3AF;
+  --c-line: #E5E7EB;
+  --c-line-strong: #D1D5DB;
+  --c-surface: #FFFFFF;
+  --c-surface-2: #F4F6F9;
+  --c-surface-3: #EBEEF3;
+  --c-accent: #FFB709;
+  --c-accent-hover: #F2A900;
+  --c-accent-soft: #FFF4D6;
+  --c-accent-ink: #0B1220;
+  --c-on-dark: #FFFFFF;
+  --c-on-dark-muted: rgba(255, 255, 255, .64);
+  --c-line-dark: rgba(255, 255, 255, .12);
+
+  --c-success: #16A34A;
+  --c-success-soft: #DCFCE7;
+  --c-danger: #DC2626;
+  --c-danger-soft: #FEE2E2;
+  --c-warning: #D97706;
+  --c-warning-soft: #FEF3C7;
+  --c-info: #2563EB;
+  --c-info-soft: #DBEAFE;
+  --c-violet: #7C3AED;
+  --c-violet-soft: #EDE9FE;
+
+  /* Typography */
+  --font-display: "Archivo", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-hero: clamp(3.25rem, 8vw, 7rem);
+  --fs-display: clamp(2.25rem, 5vw, 4rem);
+  --fs-h2: clamp(1.5rem, 2.6vw, 2.25rem);
+  --fs-h3: 1.25rem;
+  --fs-body: 1rem;
+  --fs-small: .875rem;
+  --fs-xs: .8125rem;
+  --fs-eyebrow: .75rem;
+  --lh-tight: 1.05;
+  --lh-body: 1.6;
+  --tracking-display: -.01em;
+  --tracking-eyebrow: .14em;
+
+  /* Spacing (bội số 4) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(11, 18, 32, .06);
+  --shadow-md: 0 8px 24px rgba(11, 18, 32, .08);
+  --shadow-lg: 0 24px 48px rgba(11, 18, 32, .14);
+  --focus-ring: 0 0 0 3px rgba(11, 18, 32, .18);
+
+  --header-h: 72px;
+  --topbar-h: 36px;
+  --admin-sidebar-w: 260px;
+
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur: 200ms;
+}
