@@ -13,6 +13,13 @@ const NAV = [
     ],
   },
   {
+    title: 'Sản phẩm',
+    items: [
+      { href: '/admin/products.html', icon: 'shirt', label: 'Sản phẩm', key: 'products' },
+      { href: '/admin/inventory.html', icon: 'layers', label: 'Tồn kho', key: 'inventory' },
+    ],
+  },
+  {
     title: 'Dữ liệu nền',
     items: [
       { href: '/admin/master-data.html?entity=categories', icon: 'layers', label: 'Danh mục', key: 'categories' },

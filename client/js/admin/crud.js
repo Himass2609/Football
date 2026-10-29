@@ -183,9 +183,31 @@ function bindFieldBehaviors(form, fields, refreshVisibility) {
   });
 }
 
+/**
+ * Dựng các trường vào `container` (phải nằm trong một <form>).
+ * @returns {Promise<{form: HTMLFormElement, values: () => object}>} values() bỏ qua trường đang ẩn theo showIf
+ */
+export async function mountFields(container, fields, { initial = {}, mode = 'create' } = {}) {
+  const visible = fields.filter((f) => !f.only || f.only === mode);
+  container.innerHTML = `<div class="form-grid">${(await Promise.all(visible.map(fieldHtml))).join('')}</div>`;
+  const form = container.closest('form');
+
+  for (const field of visible) setValue(form, field, field.get ? field.get(initial) : (initial[field.name] ?? field.default));
+
+  const read = () => Object.fromEntries(visible.map((f) => [f.name, readValue(form, f)]));
+  const fieldEl = (name) => $(`[data-field="${name}"]`, container);
+  const refreshVisibility = () => {
+    const current = read();
+    for (const field of visible) if (field.showIf) fieldEl(field.name).hidden = !field.showIf(current);
+  };
+  bindFieldBehaviors(form, visible, refreshVisibility);
+  refreshVisibility();
+
+  return { form, values: () => Object.fromEntries(Object.entries(read()).filter(([name]) => !fieldEl(name)?.hidden)) };
+}
+
 /** Mở dialog form; resolve với dữ liệu trả về khi lưu thành công, null nếu hủy */
 export async function openFormDialog({ title, fields, initial = {}, mode = 'create', submit, size = '', submitLabel = 'Lưu' }) {
-  const visible = fields.filter((f) => !f.only || f.only === mode);
   const dialog = document.createElement('dialog');
   dialog.className = `dialog ${size}`;
   dialog.innerHTML = html`
@@ -194,27 +216,14 @@ export async function openFormDialog({ title, fields, initial = {}, mode = 'crea
         <h2 class="dialog-title">${title}</h2>
         <button class="icon-btn" type="button" data-close aria-label="Đóng">${raw(icon('x'))}</button>
       </div>
-      <div class="dialog-body"><div class="form-grid">${raw((await Promise.all(visible.map(fieldHtml))).join(''))}</div></div>
+      <div class="dialog-body" data-fields></div>
       <div class="dialog-foot">
         <button class="btn btn-ghost btn-sm" type="button" data-close>Hủy</button>
         <button class="btn btn-dark btn-sm" type="submit" data-loading-text="Đang lưu...">${submitLabel}</button>
       </div>
     </form>`;
   document.body.append(dialog);
-  const form = $('form', dialog);
-
-  for (const field of visible) setValue(form, field, field.get ? field.get(initial) : (initial[field.name] ?? field.default));
-
-  const values = () => Object.fromEntries(visible.map((f) => [f.name, readValue(form, f)]));
-  const refreshVisibility = () => {
-    const current = values();
-    for (const field of visible) {
-      if (!field.showIf) continue;
-      $(`[data-field="${field.name}"]`, form).hidden = !field.showIf(current);
-    }
-  };
-  bindFieldBehaviors(form, visible, refreshVisibility);
-  refreshVisibility();
+  const { form, values } = await mountFields($('[data-fields]', dialog), fields, { initial, mode });
 
   return new Promise((resolve) => {
     const close = (result) => {
@@ -232,15 +241,10 @@ export async function openFormDialog({ title, fields, initial = {}, mode = 'crea
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearFieldErrors(form);
-      const current = values();
-      // Bỏ các trường đang ẩn theo điều kiện
-      const payload = Object.fromEntries(
-        Object.entries(current).filter(([name]) => !$(`[data-field="${name}"]`, form)?.hidden),
-      );
       const button = $('[type="submit"]', form);
       setLoading(button, true);
       try {
-        close(await submit(payload));
+        close(await submit(values()));
       } catch (err) {
         handleFormError(form, err);
         setLoading(button, false);
@@ -270,7 +274,13 @@ export function createCrudPage(config) {
     searchPlaceholder = 'Tìm kiếm...',
     limit = 20,
     canCreate = true,
+    canEdit = true,
     canDelete = true,
+    createLabel = `Thêm ${label}`,
+    editHref, // (row) => url: sửa ở trang riêng thay vì dialog
+    afterCreate, // (saved) => void: vd chuyển sang trang sửa chi tiết
+    onLoaded, // (meta) => void: hiển thị số liệu tổng hợp
+    createFields = fields,
     rowActions = () => [],
     dialogSize = '',
     toPayload = (values) => values,
@@ -296,7 +306,7 @@ export function createCrudPage(config) {
             ${f.options.map((o) => raw(html`<option value="${o.value}">${o.label}</option>`))}
           </select>`),
         )}
-        ${canCreate ? raw(html`<button class="btn btn-dark btn-sm ms-auto" type="button" data-create>${raw(icon('plus', 16))}Thêm ${label}</button>`) : ''}
+        ${canCreate ? raw(html`<button class="btn btn-dark btn-sm ms-auto" type="button" data-create>${raw(icon('plus', 16))}${createLabel}</button>`) : ''}
       </div>
       <div class="table-wrap">
         <table class="table">
@@ -328,7 +338,11 @@ export function createCrudPage(config) {
                   ${rowActions(row).map((a) =>
                     raw(html`<button class="icon-btn ${a.danger ? 'danger' : ''}" type="button" data-action="${a.key}" title="${a.label}" aria-label="${a.label}">${raw(icon(a.icon, 18))}</button>`),
                   )}
-                  <button class="icon-btn" type="button" data-action="edit" title="Sửa" aria-label="Sửa">${raw(icon('pencil', 18))}</button>
+                  ${canEdit
+                    ? raw(editHref
+                      ? html`<a class="icon-btn" href="${editHref(row)}" title="Sửa" aria-label="Sửa">${raw(icon('pencil', 18))}</a>`
+                      : html`<button class="icon-btn" type="button" data-action="edit" title="Sửa" aria-label="Sửa">${raw(icon('pencil', 18))}</button>`)
+                    : ''}
                   ${canDelete ? raw(html`<button class="icon-btn danger" type="button" data-action="delete" title="Xóa" aria-label="Xóa">${raw(icon('trash', 18))}</button>`) : ''}
                 </div></td>
               </tr>`,
@@ -339,6 +353,7 @@ export function createCrudPage(config) {
         state.page = page;
         load();
       });
+      onLoaded?.(meta);
     } catch (err) {
       tbody.innerHTML = `<tr><td colspan="${colspan}">${emptyState('alert-circle', 'Không tải được dữ liệu', err.message)}</td></tr>`;
     }
@@ -347,7 +362,7 @@ export function createCrudPage(config) {
   async function openEditor(row) {
     const saved = await openFormDialog({
       title: row ? `Sửa ${label}` : `Thêm ${label}`,
-      fields,
+      fields: row ? fields : createFields,
       initial: row ?? {},
       mode: row ? 'edit' : 'create',
       size: dialogSize,
@@ -355,6 +370,7 @@ export function createCrudPage(config) {
     });
     if (saved) {
       toast(row ? 'Đã lưu thay đổi' : `Đã thêm ${label}`, 'success');
+      if (!row && afterCreate) return afterCreate(saved);
       load();
     }
   }

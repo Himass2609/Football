@@ -13,11 +13,13 @@ async function render(user) {
     const c = data.counts;
     const kpis = [
       { label: 'Khách hàng', value: c.customers, hint: `${c.admins} quản trị viên`, icon: 'users', accent: true },
-      { label: 'Sản phẩm', value: c.products, hint: 'Quản lý ở Phase 2', icon: 'shirt' },
+      { label: 'Sản phẩm', value: c.products, hint: `${c.activeProducts} đang bán · ${c.lowStock} biến thể sắp hết`, icon: 'shirt' },
       { label: 'Ưu đãi đang chạy', value: c.runningPromotions + c.runningVouchers, hint: `${c.runningPromotions} khuyến mãi · ${c.runningVouchers} voucher`, icon: 'percent' },
       { label: 'Bài viết đã đăng', value: c.publishedNews, hint: 'Tin tức & cẩm nang', icon: 'newspaper' },
     ];
     const quick = [
+      ['/admin/products.html', 'shirt', `Sản phẩm (${c.products})`],
+      ['/admin/inventory.html', 'layers', `Tồn kho (${c.lowStock} sắp hết)`],
       ['/admin/master-data.html?entity=teams', 'flag', `Đội bóng (${c.teams})`],
       ['/admin/master-data.html?entity=categories', 'layers', `Danh mục (${c.categories})`],
       ['/admin/master-data.html?entity=brands', 'badge-check', `Thương hiệu (${c.brands})`],
@@ -75,8 +77,8 @@ async function render(user) {
             <div class="card-body pt-2 pb-2">
               <ul class="roadmap">
                 <li><span class="pill pill-green">Xong</span><span><b>Phase 1</b> — Tài khoản, phân quyền, dữ liệu nền, khuyến mãi, tin tức</span></li>
-                <li><span class="pill pill-amber">Tiếp theo</span><span><b>Phase 2</b> — Sản phẩm, biến thể, tồn kho, tìm kiếm & lọc</span></li>
-                <li><span class="pill pill-gray">Sau</span><span><b>Phase 3</b> — Giỏ hàng, đặt hàng, thanh toán, đánh giá, thống kê</span></li>
+                <li><span class="pill pill-green">Xong</span><span><b>Phase 2</b> — Sản phẩm, biến thể, tồn kho, tìm kiếm & lọc</span></li>
+                <li><span class="pill pill-amber">Tiếp theo</span><span><b>Phase 3</b> — Giỏ hàng, đặt hàng, thanh toán, đánh giá, thống kê</span></li>
               </ul>
             </div>
           </div>
