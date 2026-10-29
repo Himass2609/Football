@@ -10,6 +10,22 @@ import {
   userController,
 } from '../controllers/admin.controller.js';
 import { newsController } from '../controllers/news.controller.js';
+import { imageController, inventoryController, productController, variantController } from '../controllers/product.controller.js';
+import {
+  addImagesSchema,
+  adjustStockSchema,
+  adminProductQuery,
+  createProductSchema,
+  generateVariantsSchema,
+  imageParams,
+  inventoryQuery,
+  productStatusSchema,
+  reorderImagesSchema,
+  updateImageSchema,
+  updateProductSchema,
+  updateVariantSchema,
+  variantParams,
+} from '../validators/product.validator.js';
 import { authenticate, requirePermission, requireRole } from '../middlewares/auth.js';
 import { uploadImage } from '../middlewares/upload.js';
 import { validate } from '../middlewares/validate.js';
@@ -102,6 +118,29 @@ const news = mountCrud('/news', P.NEWS_MANAGE, { ...newsController, list: newsCo
   updateSchema: updateNewsSchema,
 });
 news.patch('/:id/status', validate({ params: idParam, body: newsStatusSchema }), newsController.changeStatus);
+
+// Sản phẩm, biến thể, ảnh
+const products = mountCrud('/products', P.PRODUCT_MANAGE, productController, {
+  listSchema: adminProductQuery,
+  createSchema: createProductSchema,
+  updateSchema: updateProductSchema,
+});
+products.patch('/:id/status', validate({ params: idParam, body: productStatusSchema }), productController.setStatus);
+products.post('/:id/variants', validate({ params: idParam, body: generateVariantsSchema }), variantController.generate);
+products.patch('/:id/variants/:variantId', validate({ params: variantParams, body: updateVariantSchema }), variantController.update);
+products.delete('/:id/variants/:variantId', validate({ params: variantParams }), variantController.remove);
+products.post('/:id/images', validate({ params: idParam, body: addImagesSchema }), imageController.add);
+products.put('/:id/images/order', validate({ params: idParam, body: reorderImagesSchema }), imageController.reorder);
+products.patch('/:id/images/:imageId', validate({ params: imageParams, body: updateImageSchema }), imageController.update);
+products.delete('/:id/images/:imageId', validate({ params: imageParams }), imageController.remove);
+
+// Tồn kho theo biến thể
+const inventory = Router();
+inventory.use(requirePermission(P.INVENTORY_MANAGE));
+inventory.get('/', validate({ query: inventoryQuery }), inventoryController.list);
+inventory.post('/:id/adjust', validate({ params: idParam, body: adjustStockSchema }), inventoryController.adjust);
+inventory.get('/:id/logs', validate({ params: idParam }), inventoryController.logs);
+adminRouter.use('/inventory', inventory);
 
 // Cấu hình & upload
 adminRouter.get('/settings', requirePermission(P.SETTING_MANAGE), settingController.get);

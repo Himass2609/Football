@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { catalogController } from '../controllers/catalog.controller.js';
 import { newsController } from '../controllers/news.controller.js';
+import { productController } from '../controllers/product.controller.js';
+import { publicProductQuery, slugParam as productSlugParam } from '../validators/product.validator.js';
 import { validate } from '../middlewares/validate.js';
 import { MASTER_ENTITIES } from '../services/master-data.service.js';
 import { publicNewsQuery, slugParam } from '../validators/news.validator.js';
@@ -16,6 +18,9 @@ const stringQuery = (req, _res, next) => {
 for (const entity of Object.keys(MASTER_ENTITIES)) {
   publicRouter.get(`/${entity}`, stringQuery, catalogController.masterData(entity));
 }
+
+publicRouter.get('/products', validate({ query: publicProductQuery }), productController.listPublic);
+publicRouter.get('/products/:slug', validate({ params: productSlugParam }), productController.getPublic);
 
 publicRouter.get('/promotions', catalogController.promotions);
 publicRouter.get('/vouchers', catalogController.vouchers);
