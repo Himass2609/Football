@@ -4,6 +4,7 @@ import { ApiError } from '../utils/api-error.js';
 import { buildMeta, getPagination } from '../utils/pagination.js';
 import { slugify } from '../utils/slugify.js';
 import { discountRules } from '../validators/marketing.validator.js';
+import { invalidatePromotionCache } from './pricing.service.js';
 
 const TARGETS = {
   categoryId: { model: 'category', label: 'Danh mục', scope: 'CATEGORY' },
@@ -43,7 +44,7 @@ async function normalizeTargets(data, allowedTargets) {
   return result;
 }
 
-function createMarketingService({ model, label, targets, include, searchField, beforeSave = (d) => d, assertDeletable }) {
+function createMarketingService({ model, label, targets, include, searchField, beforeSave = (d) => d, assertDeletable, afterChange = () => {} }) {
   const repo = createCrudRepository(model);
 
   const getOrThrow = async (id) => {
@@ -71,6 +72,7 @@ function createMarketingService({ model, label, targets, include, searchField, b
     async create(data) {
       const normalized = await normalizeTargets(data, targets);
       const created = await repo.create(await beforeSave(normalized));
+      afterChange();
       return getOrThrow(created.id);
     },
 
@@ -80,6 +82,7 @@ function createMarketingService({ model, label, targets, include, searchField, b
       // Chỉ ghi các trường được gửi lên + khóa đối tượng đã chuẩn hóa (không ghi đè usedCount...)
       const changes = { ...data, ...Object.fromEntries(targets.map((field) => [field, normalized[field]])) };
       await repo.update(id, await beforeSave(changes, current));
+      afterChange();
       return getOrThrow(id);
     },
 
@@ -87,6 +90,7 @@ function createMarketingService({ model, label, targets, include, searchField, b
       const item = await getOrThrow(id);
       await assertDeletable?.(item);
       await repo.remove(id);
+      afterChange();
     },
 
     listRunning: (extraWhere = {}) =>
@@ -109,6 +113,7 @@ export const promotionService = createMarketingService({
   targets: ['categoryId', 'teamId', 'productId'],
   include: { ...targetInclude, team: { select: { id: true, name: true, slug: true } } },
   searchField: 'name',
+  afterChange: invalidatePromotionCache,
   beforeSave: async (data, current) =>
     data.name && data.name !== current?.name ? { ...data, slug: await uniquePromotionSlug(data.name, current?.id) } : data,
 });
