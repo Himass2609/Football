@@ -253,6 +253,156 @@ async function seedNews() {
   }
 }
 
+// ───────── Sản phẩm mẫu (Phase 2) ─────────
+const SEASON = '2026/27';
+const JERSEY_MATERIAL = 'Polyester tái chế, công nghệ thoát nhiệt';
+
+// [slug đội, loại (san-nha|san-khach), màu, giá gốc, giá sale, hãng, nổi bật]
+const KITS = [
+  ['real-madrid', 'san-nha', 'Trắng', 890000, null, 'Adidas', true],
+  ['real-madrid', 'san-khach', 'Đen', 890000, null, 'Adidas'],
+  ['barcelona', 'san-nha', 'Đỏ', 890000, 790000, 'Nike', true],
+  ['barcelona', 'san-khach', 'Vàng', 890000, null, 'Nike'],
+  ['liverpool', 'san-nha', 'Đỏ', 850000, null, 'Adidas', true],
+  ['manchester-united', 'san-nha', 'Đỏ', 850000, null, 'Adidas', true],
+  ['manchester-united', 'san-khach', 'Trắng', 850000, 690000, 'Adidas'],
+  ['manchester-city', 'san-nha', 'Xanh da trời', 850000, null, 'Puma'],
+  ['arsenal', 'san-nha', 'Đỏ', 850000, null, 'Adidas'],
+  ['chelsea', 'san-nha', 'Xanh dương', 850000, null, 'Nike'],
+  ['bayern-munich', 'san-nha', 'Đỏ', 850000, null, 'Adidas'],
+  ['borussia-dortmund', 'san-nha', 'Vàng', 790000, null, 'Puma'],
+  ['juventus', 'san-nha', 'Đen', 850000, null, 'Adidas'],
+  ['ac-milan', 'san-nha', 'Đỏ', 790000, null, 'Puma'],
+  ['inter-milan', 'san-nha', 'Xanh dương', 790000, null, 'Nike'],
+  ['paris-saint-germain', 'san-nha', 'Xanh navy', 890000, null, 'Nike'],
+  ['atletico-madrid', 'san-nha', 'Đỏ', 790000, null, 'Nike'],
+  ['ha-noi-fc', 'san-nha', 'Tím', 450000, null, null],
+  ['viet-nam', 'san-nha', 'Đỏ', 550000, null, null, true],
+  ['viet-nam', 'san-khach', 'Trắng', 550000, null, null],
+  ['argentina', 'san-nha', 'Xanh da trời', 950000, null, 'Adidas', true],
+  ['brazil', 'san-nha', 'Vàng', 950000, null, 'Nike'],
+  ['phap', 'san-nha', 'Xanh navy', 950000, 850000, 'Nike'],
+  ['duc', 'san-nha', 'Trắng', 950000, null, 'Adidas'],
+  ['anh', 'san-nha', 'Trắng', 950000, null, 'Nike'],
+  ['bo-dao-nha', 'san-nha', 'Đỏ', 950000, null, 'Nike'],
+];
+
+// Sản phẩm khác: { name, team, category, type, brand, colors, sizeType, price, sale, season, gender, material, description }
+const OTHERS = [
+  { name: 'Áo Real Madrid sân nhà 2026/27 – bản Player', team: 'real-madrid', category: 'ao-dau-cau-lac-bo', type: 'san-nha', brand: 'Adidas', colors: ['Trắng'], sizes: ['S', 'M', 'L', 'XL'], price: 1690000, description: 'Phiên bản cầu thủ: form ôm, vải siêu nhẹ, logo ép nhiệt.' },
+  { name: 'Áo Barcelona sân nhà 2026/27 – bản Player', team: 'barcelona', category: 'ao-dau-cau-lac-bo', type: 'san-nha', brand: 'Nike', colors: ['Đỏ'], sizes: ['S', 'M', 'L', 'XL'], price: 1690000, description: 'Phiên bản cầu thủ: form ôm, vải siêu nhẹ, logo ép nhiệt.' },
+  { name: 'Áo Manchester United retro 1999', team: 'manchester-united', category: 'ao-retro', type: 'phien-ban-ky-niem', brand: 'Umbro', colors: ['Đỏ'], price: 750000, season: '1998/99', material: 'Cotton pha polyester', description: 'Tái bản mẫu áo mùa giải lịch sử 1998/99.' },
+  { name: 'Áo Brazil retro 2002', team: 'brazil', category: 'ao-retro', type: 'phien-ban-ky-niem', brand: 'Nike', colors: ['Vàng'], price: 750000, season: '2002', material: 'Cotton pha polyester', description: 'Mẫu áo gắn với chức vô địch World Cup 2002.' },
+  { name: 'Áo AC Milan retro 2007', team: 'ac-milan', category: 'ao-retro', type: 'phien-ban-ky-niem', brand: 'Adidas', colors: ['Đỏ'], price: 750000, season: '2006/07', material: 'Cotton pha polyester' },
+  { name: 'Áo Việt Nam retro 2008', team: 'viet-nam', category: 'ao-retro', type: 'phien-ban-ky-niem', brand: null, colors: ['Đỏ'], price: 450000, sale: 390000, season: '2008', description: 'Kỷ niệm chức vô địch AFF Cup 2008.' },
+  { name: 'Áo tập Real Madrid', team: 'real-madrid', category: 'do-tap-luyen', type: 'tap-luyen', brand: 'Adidas', colors: ['Trắng', 'Xanh navy'], price: 490000 },
+  { name: 'Áo tập Liverpool', team: 'liverpool', category: 'do-tap-luyen', type: 'tap-luyen', brand: 'Adidas', colors: ['Đỏ', 'Đen'], price: 490000 },
+  { name: 'Áo khoác tập Manchester City', team: 'manchester-city', category: 'do-tap-luyen', type: 'tap-luyen', brand: 'Puma', colors: ['Xanh navy'], price: 990000, material: 'Polyester chống gió' },
+  { name: 'Bộ đồ trẻ em Real Madrid sân nhà', team: 'real-madrid', category: 'do-tre-em', type: 'san-nha', brand: 'Adidas', colors: ['Trắng'], sizeType: 'KID', price: 590000, gender: 'KIDS' },
+  { name: 'Bộ đồ trẻ em Barcelona sân nhà', team: 'barcelona', category: 'do-tre-em', type: 'san-nha', brand: 'Nike', colors: ['Đỏ'], sizeType: 'KID', price: 590000, gender: 'KIDS' },
+  { name: 'Bộ đồ trẻ em Việt Nam', team: 'viet-nam', category: 'do-tre-em', type: 'san-nha', brand: null, colors: ['Đỏ'], sizeType: 'KID', price: 390000, gender: 'KIDS' },
+  { name: 'Quần đấu Barcelona sân nhà', team: 'barcelona', category: 'quan-bong-da', type: 'san-nha', brand: 'Nike', colors: ['Xanh navy'], price: 390000 },
+  { name: 'Quần đấu Real Madrid sân nhà', team: 'real-madrid', category: 'quan-bong-da', type: 'san-nha', brand: 'Adidas', colors: ['Trắng'], price: 390000 },
+  { name: 'Bộ quần áo Manchester United sân nhà', team: 'manchester-united', category: 'bo-quan-ao-bong-da', type: 'san-nha', brand: 'Adidas', colors: ['Đỏ'], price: 1090000, sale: 950000 },
+  { name: 'Tất bóng đá JERSEY', team: null, category: 'phu-kien-bong-da', type: null, brand: null, colors: ['Trắng', 'Đen'], sizeType: 'ONE', price: 120000, season: null, material: 'Cotton co giãn', description: 'Tất cao cổ, đệm lòng bàn chân, chống trơn.' },
+  { name: 'Khăn cổ vũ Việt Nam', team: 'viet-nam', category: 'phu-kien-bong-da', type: null, brand: null, colors: ['Đỏ'], sizeType: 'ONE', price: 180000, season: null, material: 'Acrylic dệt kim' },
+  { name: 'Băng đội trưởng JERSEY', team: null, category: 'phu-kien-bong-da', type: null, brand: null, colors: ['Vàng', 'Đen'], sizeType: 'ONE', price: 90000, season: null, material: 'Thun co giãn' },
+];
+
+// Số giả ngẫu nhiên ổn định để seed chạy lại vẫn cho cùng kết quả
+const pseudo = (n) => {
+  const x = Math.sin(n * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+};
+
+async function seedProducts() {
+  const [teams, categories, types, brands, sizes, colors] = await Promise.all([
+    prisma.team.findMany(),
+    prisma.category.findMany(),
+    prisma.productType.findMany(),
+    prisma.brand.findMany(),
+    prisma.size.findMany({ orderBy: { sortOrder: 'asc' } }),
+    prisma.color.findMany(),
+  ]);
+  const by = (list, key) => Object.fromEntries(list.map((x) => [x[key], x]));
+  const team = by(teams, 'slug');
+  const category = by(categories, 'slug');
+  const type = by(types, 'slug');
+  const brand = by(brands, 'name');
+  const color = by(colors, 'name');
+  const sizesOf = (sizeType, names) => sizes.filter((s) => s.sizeType === sizeType && (!names || names.includes(s.name)));
+
+  const items = [
+    ...KITS.map(([teamSlug, typeSlug, colorName, price, sale, brandName, featured]) => {
+      const t = team[teamSlug];
+      return {
+        name: `Áo ${t.name} ${typeSlug === 'san-nha' ? 'sân nhà' : 'sân khách'} ${SEASON}`,
+        team: teamSlug,
+        category: t.type === 'NATIONAL' ? 'ao-doi-tuyen-quoc-gia' : 'ao-dau-cau-lac-bo',
+        type: typeSlug,
+        brand: brandName,
+        colors: [colorName],
+        price,
+        sale,
+        featured,
+        description: `Áo đấu ${typeSlug === 'san-nha' ? 'sân nhà' : 'sân khách'} chính hãng của ${t.name} mùa giải ${SEASON}. Bản Fan form suông, thấm hút mồ hôi tốt, phù hợp mặc hằng ngày.`,
+      };
+    }),
+    ...OTHERS,
+  ];
+
+  let index = 0;
+  for (const item of items) {
+    index += 1;
+    const season = item.season === undefined ? SEASON : item.season;
+    const slug = slugify([item.name, season && !item.name.includes(season) ? season.replace('/', '-') : null].filter(Boolean).join(' '));
+    const data = {
+      name: item.name,
+      slug,
+      categoryId: category[item.category].id,
+      teamId: item.team ? team[item.team].id : null,
+      productTypeId: item.type ? type[item.type].id : null,
+      brandId: item.brand ? brand[item.brand].id : null,
+      season,
+      gender: item.gender ?? 'UNISEX',
+      material: item.material ?? JERSEY_MATERIAL,
+      description: item.description ?? null,
+      basePrice: item.price,
+      salePrice: item.sale ?? null,
+      status: 'ACTIVE',
+      isFeatured: Boolean(item.featured),
+      soldCount: Math.floor(pseudo(index) * 240),
+      createdAt: days(-Math.floor(pseudo(index + 100) * 90)),
+    };
+    const product = await prisma.product.upsert({ where: { slug }, update: { ...data, createdAt: undefined }, create: data });
+
+    const variantSizes = sizesOf(item.sizeType ?? 'ADULT', item.sizes);
+    for (const [ci, colorName] of item.colors.entries()) {
+      for (const [si, size] of variantSizes.entries()) {
+        const exists = await prisma.productVariant.findUnique({
+          where: { productId_sizeId_colorId: { productId: product.id, sizeId: size.id, colorId: color[colorName].id } },
+        });
+        if (exists) continue;
+        // Khoảng 10% hết hàng, 15% sắp hết để demo bộ lọc và cảnh báo tồn kho
+        const r = pseudo(index * 31 + ci * 7 + si);
+        const stock = r < 0.1 ? 0 : r < 0.25 ? 1 + Math.floor(r * 16) : 8 + Math.floor(r * 40);
+        const variant = await prisma.productVariant.create({
+          data: {
+            productId: product.id,
+            sizeId: size.id,
+            colorId: color[colorName].id,
+            sku: `JS${String(product.id).padStart(4, '0')}-${size.name}-${slugify(colorName).toUpperCase().slice(0, 6)}`,
+            stockQuantity: stock,
+          },
+        });
+        if (stock > 0) {
+          await prisma.inventoryLog.create({ data: { variantId: variant.id, change: stock, stockAfter: stock, reason: 'IMPORT', note: 'Tồn kho ban đầu (seed)' } });
+        }
+      }
+    }
+  }
+}
+
 async function seedSettings() {
   if (await prisma.systemSetting.count()) return;
   await prisma.systemSetting.create({
@@ -274,6 +424,7 @@ async function main() {
   await seedMarketing();
   await seedNews();
   await seedSettings();
+  await seedProducts();
   console.info('✔ Seed dữ liệu mẫu hoàn tất');
 }
 
