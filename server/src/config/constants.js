@@ -39,4 +39,11 @@ export const KIT_PATTERNS = Object.freeze(['PLAIN', 'STRIPES', 'HOOPS', 'HALVES'
 export const SIZE_TYPES = Object.freeze(['ADULT', 'KID', 'ONE']);
 export const GENDERS = Object.freeze(['MALE', 'FEMALE', 'OTHER']);
 
-export const OTP = Object.freeze({ LENGTH: 6, TTL_MINUTES: 10, MAX_ATTEMPTS: 5, RESEND_SECONDS: 60 });
+export const PRODUCT_STATUS = Object.freeze({ DRAFT: 'DRAFT', ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' });
+export const PRODUCT_GENDERS = Object.freeze(['MEN', 'WOMEN', 'KIDS', 'UNISEX']);
+export const PRODUCT_SORTS = Object.freeze(['newest', 'price_asc', 'price_desc', 'best_selling', 'name_asc']);
+export const LOW_STOCK_THRESHOLD = 5;
+// Lý do thay đổi tồn kho (InventoryLog.reason) — ORDER/CANCEL dùng ở Phase 3
+export const INVENTORY_REASONS = Object.freeze({ IMPORT: 'IMPORT', ADJUST: 'ADJUST', ORDER: 'ORDER', CANCEL: 'CANCEL' });
+
+export const OTP =Object.freeze({ LENGTH: 6, TTL_MINUTES: 10, MAX_ATTEMPTS: 5, RESEND_SECONDS: 60 });

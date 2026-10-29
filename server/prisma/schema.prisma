@@ -282,8 +282,25 @@ model ProductVariant {
   color         Color         @relation(fields: [colorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   cartItems     CartItem[]
   orderDetails  OrderDetail[]
+  inventoryLogs InventoryLog[]
 
   @@unique([productId, sizeId, colorId])
+}
+
+// Mỗi lần tồn kho thay đổi (nhập, điều chỉnh, đặt/hủy đơn) đều ghi lại để truy vết
+model InventoryLog {
+  id          Int            @id @default(autoincrement())
+  variantId   Int
+  change      Int
+  stockAfter  Int
+  reason      String         @db.VarChar(20)
+  note        String?        @db.NVarChar(255)
+  orderId     Int?
+  createdById Int?
+  createdAt   DateTime       @default(now())
+  variant     ProductVariant @relation(fields: [variantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([variantId, createdAt])
 }
 
 // ───────────── Giỏ hàng & đơn hàng ─────────────
