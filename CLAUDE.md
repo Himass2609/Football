@@ -100,7 +100,7 @@ Luồng bắt buộc: `Route → Controller → Service → Repository → DB`. 
 - **Cột nullable không đặt `@unique`** (SQL Server chỉ cho 1 NULL) — ví dụ SĐT kiểm tra trùng ở service.
 - **RBAC**: route admin = `authenticate + requireRole('ADMIN') + requirePermission(P.XXX)`. Thêm quyền mới → khai báo trong `PERMISSIONS` rồi chạy lại seed.
 - **XSS**: frontend dựng HTML bằng tagged template `html\`\`` (tự escape); chỉ dùng `raw()` cho HTML tin cậy. Nội dung tin tức lưu văn bản thuần, không render HTML từ DB. Upload không nhận SVG.
-- **Màu/ảnh minh họa**: chưa có ảnh sản phẩm thì dùng `jerseySvg()` với `primaryColor/secondaryColor/kitPattern` của Team.
+- **Màu/ảnh minh họa**: ảnh sản phẩm hiển thị `object-fit: contain` + `mix-blend-mode: multiply` để nền ảnh hòa vào nền thẻ; chưa có ảnh sản phẩm thì dùng `jerseySvg()` với `primaryColor/secondaryColor/kitPattern` của Team.
 
 ---
 
@@ -279,7 +279,8 @@ npm run dev                       # nodemon → http://localhost:3000 (phục v�
 - DB dev: SQL Server Express `localhost:1433`, database `JerseyShop` (+ `JerseyShop_shadow` cho migrate), login riêng `jersey_app`.
 - SMTP để trống → mã OTP quên mật khẩu được **in ra console** server.
 - Tài khoản seed: `admin@jersey.vn / Admin@123`, `customer@jersey.vn / Customer@123` (chỉ dùng dev; trang đăng nhập có nút điền nhanh).
-- Seed hiện có: 2 vai trò, 15 quyền, 8 danh mục, 6 thương hiệu, 7 giải, 22 đội (có màu áo), 6 loại SP, 11 size, 12 màu, 3 voucher, 2 khuyến mãi, 3 bài viết, 44 sản phẩm / 218 biến thể (có hàng hết & sắp hết để demo).
+- Seed hiện có: 2 vai trò, 15 quyền, 10 danh mục, 14 thương hiệu, 7 giải (có logo), 46 đội (có màu áo), 6 loại SP, 21 size (ADULT/KID/SHOE/GLOVE/ONE), 16 màu, 3 voucher, 2 khuyến mãi, 3 bài viết, 180 sản phẩm / 819 biến thể (có hàng hết & sắp hết để demo).
+- **Ảnh thật**: thư mục `image/` ở gốc repo (clothes, shoes, gloves, accessories, league, national, teams = logo đội `<slug>.png` lấy từ infobox Wikipedia) — **không commit** (logo thương hiệu/CLB), mỗi máy tự chép vào. Server phục vụ tại `/images/...`; seed chỉ gắn ảnh nếu file tồn tại, thiếu thì giao diện dùng áo SVG. Ảnh admin tải lên vẫn ở `/uploads`.
 
 ## Trạng thái
 - ✅ **Phase 1** xong: Auth (đăng ký/đăng nhập/đăng xuất/đổi mật khẩu/quên mật khẩu OTP), Profile, RBAC, quản lý tài khoản, toàn bộ master data, Promotion, Voucher, News + chuyên mục, cấu hình cửa hàng, upload ảnh, trang chủ, tin tức, admin.
