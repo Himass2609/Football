@@ -11,6 +11,8 @@ import { accountRouter, authRouter } from './routes/auth.routes.js';
 import { publicRouter } from './routes/public.routes.js';
 
 const CLIENT_DIR = path.resolve(import.meta.dirname, '../../client');
+// Ảnh sản phẩm / logo giải có sẵn (thư mục image/ ở gốc repo, không commit)
+const IMAGE_DIR = path.resolve(import.meta.dirname, '../../image');
 
 export const app = express();
 
@@ -41,6 +43,7 @@ app.use('/api/v1', publicRouter);
 app.use('/api', notFoundHandler);
 
 app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' }));
+app.use('/images', express.static(IMAGE_DIR, { maxAge: '7d' }));
 app.use(express.static(CLIENT_DIR, { extensions: ['html'] }));
 app.use((_req, res) => res.status(404).sendFile(path.join(CLIENT_DIR, '404.html')));
 

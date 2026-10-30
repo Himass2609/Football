@@ -36,7 +36,7 @@ export const NEWS_TRANSITIONS = Object.freeze({
 
 export const TEAM_TYPES = Object.freeze(['CLUB', 'NATIONAL']);
 export const KIT_PATTERNS = Object.freeze(['PLAIN', 'STRIPES', 'HOOPS', 'HALVES', 'SASH']);
-export const SIZE_TYPES = Object.freeze(['ADULT', 'KID', 'ONE']);
+export const SIZE_TYPES = Object.freeze(['ADULT', 'KID', 'SHOE', 'GLOVE', 'ONE']);
 export const GENDERS = Object.freeze(['MALE', 'FEMALE', 'OTHER']);
 
 export const PRODUCT_STATUS = Object.freeze({ DRAFT: 'DRAFT', ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' });

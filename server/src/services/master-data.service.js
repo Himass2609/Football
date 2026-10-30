@@ -26,7 +26,7 @@ export const MASTER_ENTITIES = {
     slug: true,
     relations: ['products', 'promotions'],
     orderBy: [{ isFeatured: 'desc' }, { name: 'asc' }],
-    include: { league: { select: { id: true, name: true, slug: true } } },
+    include: { league: { select: { id: true, name: true, slug: true, logoUrl: true } } },
     references: { leagueId: { model: 'league', label: 'Giải đấu' } },
     publicFilters: (query) => ({
       ...(query.type && { type: query.type }),

@@ -9,3 +9,6 @@ server/uploads/*
 # Tài liệu gốc (thông tin cá nhân / ảnh thiết kế tham khảo) — chỉ giữ trên máy
 buoi1_cdth.docx
 ff.png
+
+# Ảnh sản phẩm thật (có logo thương hiệu/CLB) — chép thủ công vào image/ ở mỗi máy
+image/
