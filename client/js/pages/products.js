@@ -76,10 +76,12 @@ function group(title, key, body, active) {
 }
 
 function renderFilters() {
-  const { categories, teams, brands, sizes, colors } = lookups;
+  const { categories, teams, brands, sizes, colors, leagues } = lookups;
   const sizeGroups = [
     ['ADULT', 'Người lớn'],
     ['KID', 'Trẻ em'],
+    ['SHOE', 'Giày'],
+    ['GLOVE', 'Găng tay'],
     ['ONE', 'Phụ kiện'],
   ];
 
@@ -91,6 +93,14 @@ function renderFilters() {
       html`<input class="input filter-search" type="search" placeholder="Tìm đội..." data-team-search aria-label="Tìm đội bóng">
         <div class="filter-list" data-team-list>${teams.map((t) => raw(option('team', t, t.name, `<span class="team-dot" style="background:${t.primaryColor}"></span>`)))}</div>`,
       state.team,
+    ),
+    group(
+      'Giải đấu',
+      'league',
+      html`<div class="filter-list">${leagues.map((l) =>
+        raw(option('league', l, l.name, l.logoUrl ? html`<img class="league-logo" src="${l.logoUrl}" alt="">` : '')),
+      )}</div>`,
+      state.league,
     ),
     group('Thương hiệu', 'brand', `<div class="filter-list">${brands.map((b) => option('brand', b)).join('')}</div>`, state.brand),
     group(

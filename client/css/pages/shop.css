@@ -287,7 +287,9 @@
 .gallery-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  padding: var(--sp-1);
+  object-fit: contain;
+  mix-blend-mode: multiply;
 }
 
 .gallery-thumb .jersey-svg {
@@ -311,7 +313,9 @@
 .gallery-main img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  padding: var(--sp-8);
+  object-fit: contain;
+  mix-blend-mode: multiply;
 }
 
 .gallery-main .jersey-svg {

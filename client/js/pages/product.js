@@ -8,9 +8,28 @@ initPage();
 const root = $('[data-product]');
 const LOW_STOCK = 5;
 const GENDER = { MEN: 'Nam', WOMEN: 'Nữ', KIDS: 'Trẻ em', UNISEX: 'Unisex' };
+const SHIRT_HEAD = ['Size', 'Ngực (cm)', 'Dài áo (cm)', 'Chiều cao'];
 const SIZE_CHART = {
-  ADULT: [['S', '88–92', '68', '1m55–1m63'], ['M', '93–97', '70', '1m63–1m70'], ['L', '98–102', '72', '1m70–1m76'], ['XL', '103–107', '74', '1m76–1m82'], ['XXL', '108–114', '76', '1m82–1m88']],
-  KID: [['6Y', '60–62', '46', '1m10–1m18'], ['8Y', '63–66', '50', '1m18–1m28'], ['10Y', '67–70', '54', '1m28–1m38'], ['12Y', '71–75', '58', '1m38–1m48'], ['14Y', '76–80', '62', '1m48–1m58']],
+  ADULT: {
+    head: SHIRT_HEAD,
+    rows: [['S', '88–92', '68', '1m55–1m63'], ['M', '93–97', '70', '1m63–1m70'], ['L', '98–102', '72', '1m70–1m76'], ['XL', '103–107', '74', '1m76–1m82'], ['XXL', '108–114', '76', '1m82–1m88']],
+    note: 'Số đo bản Fan. Bản Player ôm hơn — nên chọn lớn hơn 1 size.',
+  },
+  KID: {
+    head: SHIRT_HEAD,
+    rows: [['6Y', '60–62', '46', '1m10–1m18'], ['8Y', '63–66', '50', '1m18–1m28'], ['10Y', '67–70', '54', '1m28–1m38'], ['12Y', '71–75', '58', '1m38–1m48'], ['14Y', '76–80', '62', '1m48–1m58']],
+    note: 'Số đo tham khảo theo chiều cao của bé.',
+  },
+  SHOE: {
+    head: ['EU', 'US', 'UK', 'Dài chân (cm)'],
+    rows: [['39', '6.5', '6', '24.5'], ['40', '7', '6.5', '25'], ['41', '8', '7', '26'], ['42', '8.5', '7.5', '26.5'], ['43', '9.5', '8.5', '27.5'], ['44', '10', '9', '28']],
+    note: 'Đo chiều dài bàn chân vào buổi chiều; chân bè nên tăng nửa size.',
+  },
+  GLOVE: {
+    head: ['Size', 'Chu vi bàn tay (cm)', 'Dài bàn tay (cm)'],
+    rows: [['7', '17–18', '17'], ['8', '19–20', '18'], ['9', '21–22', '19'], ['10', '23–24', '20']],
+    note: 'Đo chu vi lòng bàn tay ở chỗ rộng nhất, không tính ngón cái.',
+  },
 };
 
 let product;
@@ -135,16 +154,16 @@ function bindInteractions() {
 
 // ───────── Trang ─────────
 function sizeGuideHtml() {
-  const rows = SIZE_CHART[product.sizes[0]?.sizeType];
-  if (!rows) return '';
+  const chart = SIZE_CHART[product.sizes[0]?.sizeType];
+  if (!chart) return '';
   return html`<details data-size-guide>
     <summary>Bảng size${raw(icon('chevron-down', 18))}</summary>
     <div class="acc-body">
       <table class="size-table">
-        <thead><tr><th>Size</th><th>Ngực (cm)</th><th>Dài áo (cm)</th><th>Chiều cao</th></tr></thead>
-        <tbody>${rows.map((r) => raw(html`<tr>${r.map((c) => raw(html`<td>${c}</td>`))}</tr>`))}</tbody>
+        <thead><tr>${chart.head.map((h) => raw(html`<th>${h}</th>`))}</tr></thead>
+        <tbody>${chart.rows.map((r) => raw(html`<tr>${r.map((c) => raw(html`<td>${c}</td>`))}</tr>`))}</tbody>
       </table>
-      <p class="cell-sub mt-2">Số đo bản Fan. Bản Player ôm hơn — nên chọn lớn hơn 1 size.</p>
+      <p class="cell-sub mt-2">${chart.note}</p>
     </div>
   </details>`;
 }
