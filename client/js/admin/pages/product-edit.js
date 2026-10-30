@@ -132,6 +132,8 @@ function renderVariants(panel) {
   const sizeGroups = [
     ['ADULT', 'Người lớn'],
     ['KID', 'Trẻ em'],
+    ['SHOE', 'Giày'],
+    ['GLOVE', 'Găng tay'],
     ['ONE', 'Một cỡ'],
   ];
 

@@ -139,7 +139,7 @@ const ENTITIES = {
     limit: 50,
     columns: [
       { label: 'Size', render: (r) => `<span class="cell-main">${escapeHtml(r.name)}</span>` },
-      { label: 'Nhóm', render: (r) => ({ ADULT: 'Người lớn', KID: 'Trẻ em', ONE: 'Một cỡ' })[r.sizeType] },
+      { label: 'Nhóm', render: (r) => ({ ADULT: 'Người lớn', KID: 'Trẻ em', SHOE: 'Giày', GLOVE: 'Găng tay', ONE: 'Một cỡ' })[r.sizeType] },
       { label: 'Thứ tự', render: (r) => String(r.sortOrder) },
       { label: 'Biến thể', render: usage },
       { label: 'Trạng thái', render: (r) => activePill(r.isActive) },
@@ -154,6 +154,8 @@ const ENTITIES = {
         options: [
           { value: 'ADULT', label: 'Người lớn' },
           { value: 'KID', label: 'Trẻ em' },
+          { value: 'SHOE', label: 'Giày' },
+          { value: 'GLOVE', label: 'Găng tay' },
           { value: 'ONE', label: 'Một cỡ' },
         ],
       },
