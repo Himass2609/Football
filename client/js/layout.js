@@ -126,14 +126,19 @@ async function loadMegaMenu(root) {
     const { data: teams } = await api.get('/teams');
     const groups = new Map();
     for (const team of teams) {
-      const key = team.league?.name ?? 'Khác';
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(team);
+      const key = team.league?.id ?? 0;
+      if (!groups.has(key)) groups.set(key, { league: team.league, list: [] });
+      groups.get(key).list.push(team);
     }
-    mega.innerHTML = `<div class="mega-grid">${[...groups]
+    // Giải câu lạc bộ trước, đội tuyển quốc gia (toàn đội NATIONAL) cuối
+    const national = ({ list }) => list.every((t) => t.type === 'NATIONAL');
+    const sorted = [...groups.values()].sort((a, b) => national(a) - national(b));
+    mega.innerHTML = `<div class="mega-grid">${sorted
       .map(
-        ([league, list]) => html`<div>
-          <p class="eyebrow mega-title">${league}</p>
+        ({ league, list }) => html`<div>
+          ${league
+            ? raw(html`<a class="eyebrow mega-title" href="/products.html?league=${league.slug}">${league.logoUrl ? raw(html`<img class="league-logo" src="${league.logoUrl}" alt="">`) : ''}${league.name}</a>`)
+            : raw(html`<p class="eyebrow mega-title">Khác</p>`)}
           <ul class="mega-list">${list.map((t) =>
             raw(html`<li><a href="/products.html?team=${t.slug}"><span class="team-dot" style="background:${raw(t.primaryColor)}"></span>${t.name}</a></li>`),
           )}</ul></div>`,

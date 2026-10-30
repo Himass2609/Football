@@ -22,8 +22,9 @@ const loadSafely = async (path, query) => {
 renderProducts('[data-new-season]', { featured: 'true', sort: 'newest', limit: 4 });
 renderProducts('[data-best-sellers]', { sort: 'best_selling', limit: 4 });
 
-const [teams, categories, promotions, vouchers, news] = await Promise.all([
+const [teams, leagues, categories, promotions, vouchers, news] = await Promise.all([
   loadSafely('/teams'),
+  loadSafely('/leagues'),
   loadSafely('/categories'),
   loadSafely('/promotions'),
   loadSafely('/vouchers'),
@@ -34,6 +35,7 @@ const featured = (teams ?? []).filter((t) => t.isFeatured);
 const showcase = featured.length ? featured : (teams ?? []).slice(0, 8);
 
 renderTeams(showcase);
+renderLeagues(leagues ?? [], teams ?? []);
 renderCategories(categories ?? [], teams ?? []);
 renderMatchday(promotions ?? []);
 renderCustomizer(showcase);
@@ -73,6 +75,27 @@ function renderTeams(list) {
       scroller.scrollBy({ left: Number(btn.dataset.scroll) * scroller.clientWidth * 0.8, behavior: 'smooth' });
     }),
   );
+}
+
+function renderLeagues(list, allTeams) {
+  const grid = $('[data-leagues]');
+  if (!list.length) {
+    grid.closest('section').hidden = true;
+    return;
+  }
+  // Giải câu lạc bộ trước, đội tuyển quốc gia cuối
+  const sorted = [...list].sort((a, b) => (a.type === 'NATIONAL') - (b.type === 'NATIONAL'));
+  grid.innerHTML = sorted
+    .map((league) => {
+      const count = allTeams.filter((t) => t.league?.id === league.id).length;
+      return html`
+        <a class="league-tile" href="/products.html?league=${league.slug}">
+          <span class="league-tile-logo">${league.logoUrl ? raw(html`<img src="${league.logoUrl}" alt="" loading="lazy">`) : html`${league.name.slice(0, 3)}`}</span>
+          <span class="league-tile-name">${league.name}</span>
+          <span class="league-tile-sub">${count} đội</span>
+        </a>`;
+    })
+    .join('');
 }
 
 function renderCategories(list, allTeams) {

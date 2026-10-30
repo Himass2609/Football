@@ -162,10 +162,28 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--sp-6) var(--sp-8);
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
 }
 
 .mega-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   margin-bottom: var(--sp-3);
+}
+
+a.mega-title:hover {
+  color: var(--c-ink);
+}
+
+.league-logo {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--c-ink);
+  object-fit: contain;
 }
 
 .mega-list a {
