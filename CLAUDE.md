@@ -54,7 +54,7 @@ Không tự ý thêm framework frontend (React/Vue/Tailwind) — đề tài yêu
     base.css                  # reset, typography, .display, .eyebrow, .section
     components.css            # button, badge, pill, input, card, toast, dialog, table, pagination, chip, tabs, alert
     layout.css                # topbar, header, mega menu, drawer, page-banner, footer
-    pages/{home,auth,account,news,admin}.css
+    pages/{home,auth,account,news,shop,cart,admin}.css   # cart.css dùng chung cho giỏ / thanh toán / chi tiết đơn
   /js
     api.js  auth-store.js  auth.js   # gọi API (gắn JWT, chuẩn hóa lỗi) · phiên đăng nhập · bảo vệ trang
     ui.js                     # icon(), html`` (tự escape), toast, form errors, confirmDialog, pagination
@@ -63,6 +63,9 @@ Không tự ý thêm framework frontend (React/Vue/Tailwind) — đề tài yêu
     jersey.js                 # vẽ áo SVG theo màu đội (ảnh minh họa khi chưa có ảnh thật)
     news-card.js  auth-page.js
     product-card.js           # thẻ sản phẩm, priceHtml(), productArt() (áo minh họa theo màu đội/biến thể)
+    cart-store.js             # addToCart(), badge giỏ hàng (sự kiện cart:change)
+    order-ui.js               # nhãn/màu trạng thái đơn & thanh toán, orderTimeline() — dùng chung storefront + admin
+    address-form.js           # dialog thêm/sửa địa chỉ (checkout + sổ địa chỉ)
     /pages/*.js               # 1 file / trang storefront
     /admin/shell.js           # khung admin + guard ADMIN
     /admin/crud.js            # createCrudPage(), openFormDialog() — CRUD khai báo bằng config
@@ -70,15 +73,15 @@ Không tự ý thêm framework frontend (React/Vue/Tailwind) — đề tài yêu
     /admin/product-fields.js  # trường form sản phẩm dùng chung (dialog tạo + tab Thông tin)
     /admin/stock.js           # dialog nhập / điều chỉnh kho
     /admin/pages/*.js         # 1 file / trang admin
-  index.html  products.html  cart.html  login.html  register.html  forgot-password.html
+  index.html  products.html  cart.html  checkout.html  order.html  login.html  register.html  forgot-password.html
   account.html  news.html  news-detail.html  product.html  404.html
-  /admin/{index,users,roles,products,product-edit,inventory,master-data,promotions,vouchers,news,settings}.html
+  /admin/{index,orders,order-detail,reviews,users,roles,products,product-edit,inventory,master-data,promotions,vouchers,news,settings}.html
         # master-data.html?entity=categories|brands|leagues|teams|product-types|sizes|colors|news-categories
 /server
   /src
     /config                   # env.js (đọc .env), constants.js (trạng thái, PERMISSIONS, OTP...)
     /lib                      # prisma.js (Decimal → number khi trả JSON), mailer.js
-    /routes                   # auth, public, admin (mountCrud cho bộ route chuẩn)
+    /routes                   # auth, public, customer (giỏ/đơn/địa chỉ/đánh giá), admin (mountCrud cho bộ route chuẩn)
     /controllers              # nhận req, gọi service, trả res — KHÔNG chứa business logic
     /services                 # business logic, transaction
     /repositories             # truy cập DB qua Prisma (crud.repository dùng chung)
@@ -279,14 +282,14 @@ npm run dev                       # nodemon → http://localhost:3000 (phục v�
 - DB dev: SQL Server Express `localhost:1433`, database `JerseyShop` (+ `JerseyShop_shadow` cho migrate), login riêng `jersey_app`.
 - SMTP để trống → mã OTP quên mật khẩu được **in ra console** server.
 - Tài khoản seed: `admin@jersey.vn / Admin@123`, `customer@jersey.vn / Customer@123` (chỉ dùng dev; trang đăng nhập có nút điền nhanh).
-- Seed hiện có: 2 vai trò, 15 quyền, 10 danh mục, 14 thương hiệu, 7 giải (có logo), 46 đội (có màu áo), 6 loại SP, 21 size (ADULT/KID/SHOE/GLOVE/ONE), 16 màu, 3 voucher, 2 khuyến mãi, 3 bài viết, 180 sản phẩm / 819 biến thể (có hàng hết & sắp hết để demo).
+- Seed hiện có: 2 vai trò, 15 quyền, 10 danh mục, 14 thương hiệu, 7 giải (có logo), 46 đội (có màu áo), 6 loại SP, 21 size (ADULT/KID/SHOE/GLOVE/ONE), 16 màu, 3 voucher, 2 khuyến mãi, 3 bài viết, 180 sản phẩm / 819 biến thể (có hàng hết & sắp hết để demo), 6 khách hàng demo (mật khẩu `Customer@123`), 64 đơn hàng trong 60 ngày (chỉ tạo khi DB chưa có đơn), 59 đánh giá.
 - **Ảnh thật**: thư mục `image/` ở gốc repo (clothes, shoes, gloves, accessories, league, national, teams = logo đội `<slug>.png` lấy từ infobox Wikipedia) — **không commit** (logo thương hiệu/CLB), mỗi máy tự chép vào. Server phục vụ tại `/images/...`; seed chỉ gắn ảnh nếu file tồn tại, thiếu thì giao diện dùng áo SVG. Ảnh admin tải lên vẫn ở `/uploads`.
 
 ## Trạng thái
 - ✅ **Phase 1** xong: Auth (đăng ký/đăng nhập/đăng xuất/đổi mật khẩu/quên mật khẩu OTP), Profile, RBAC, quản lý tài khoản, toàn bộ master data, Promotion, Voucher, News + chuyên mục, cấu hình cửa hàng, upload ảnh, trang chủ, tin tức, admin.
 - ✅ **Phase 2** xong (nhánh `feature/phase2-product`): Product + Variant + Image + Inventory (+ InventoryLog), tính giá khuyến mãi, `products.html` (tìm kiếm/lọc/sắp xếp/phân trang, URL giữ bộ lọc), `product.html` (chọn size/màu, tồn kho theo biến thể), admin sản phẩm / sửa sản phẩm / tồn kho, mục New Season & Best Sellers trên trang chủ.
-- ⏭️ **Phase 3**: Address, Cart, Checkout, Order (transaction trừ kho + InventoryLog reason ORDER), Payment, vòng đời đơn, hủy đơn (hoàn kho reason CANCEL), Review, Dashboard.
-- Trang giữ chỗ cho Phase sau: `cart.html`, nút "Thêm vào giỏ hàng" ở `product.html` (đang chỉ báo toast), tab Đơn hàng/Sổ địa chỉ trong `account.html`.
+- ✅ **Phase 3** xong (nhánh `feature/phase3-order`): sổ địa chỉ, giỏ hàng (`cart.html`), thanh toán + voucher (`checkout.html`), đặt đơn trong transaction (trừ kho có điều kiện, snapshot giá, InventoryLog ORDER), thanh toán COD / online mô phỏng (sandbox, lỗi thì trả lại), hủy đơn (hoàn kho CANCEL + hoàn lượt voucher), chi tiết đơn + dòng thời gian (`order.html`), đánh giá sau khi nhận hàng, admin đơn hàng / đánh giá, dashboard doanh thu.
+- `Order.paymentStatus`: `UNPAID` → `PAID` (COD khi DELIVERED, ONLINE khi cổng báo thành công) · `FAILED` (cho trả lại) · `REFUNDED` (hủy đơn đã trả). Đơn ONLINE phải `PAID` mới được xác nhận. Doanh thu dashboard = tổng đơn DELIVERED theo ngày giao.
 
 ---
 
