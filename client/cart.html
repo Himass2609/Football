@@ -14,26 +14,21 @@
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/layout.css">
-  <script type="module" src="/js/pages/static.js"></script>
+  <link rel="stylesheet" href="/css/pages/cart.css">
+  <script type="module" src="/js/pages/cart.js"></script>
 </head>
-<body>
+<body data-protected>
   <div id="site-header"></div>
 
   <main>
     <section class="page-banner">
       <div class="container">
-        <p class="eyebrow">Phase 3</p>
+        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Trang chủ</a><span>/</span><span>Giỏ hàng</span></nav>
         <h1 class="display">Giỏ hàng</h1>
       </div>
     </section>
-    <section class="section">
-      <div class="container">
-        <div class="empty">
-          <div class="empty-icon" data-icon="bag" data-icon-size="24"></div>
-          <p class="empty-title">Giỏ hàng và thanh toán sẽ có ở Phase 3.</p>
-          <a class="btn btn-dark mt-3" href="/" data-icon-after="arrow-right">Tiếp tục khám phá</a>
-        </div>
-      </div>
+    <section class="section-tight">
+      <div class="container" data-cart aria-live="polite"></div>
     </section>
   </main>
 
