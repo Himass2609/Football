@@ -10,6 +10,7 @@ import {
   userController,
 } from '../controllers/admin.controller.js';
 import { newsController } from '../controllers/news.controller.js';
+import { orderController, reviewController, statsController } from '../controllers/order.controller.js';
 import { imageController, inventoryController, productController, variantController } from '../controllers/product.controller.js';
 import {
   addImagesSchema,
@@ -41,6 +42,7 @@ import {
 } from '../validators/marketing.validator.js';
 import { masterDataSchemas } from '../validators/master-data.validator.js';
 import { adminNewsQuery, createNewsSchema, newsStatusSchema, updateNewsSchema } from '../validators/news.validator.js';
+import { adminOrderQuery, adminReviewQuery, orderStatusSchema, reviewVisibilitySchema, statsQuery } from '../validators/order.validator.js';
 import { updateSettingSchema } from '../validators/setting.validator.js';
 import {
   createUserSchema,
@@ -69,6 +71,7 @@ function mountCrud(path, permission, controller, { listSchema = listQuery, creat
 }
 
 adminRouter.get('/overview', requirePermission(P.DASHBOARD_VIEW), overviewController.get);
+adminRouter.get('/stats', requirePermission(P.DASHBOARD_VIEW), validate({ query: statsQuery }), statsController.get);
 
 // Tài khoản
 const users = mountCrud('/users', P.USER_MANAGE, userController, {
@@ -141,6 +144,21 @@ inventory.get('/', validate({ query: inventoryQuery }), inventoryController.list
 inventory.post('/:id/adjust', validate({ params: idParam, body: adjustStockSchema }), inventoryController.adjust);
 inventory.get('/:id/logs', validate({ params: idParam }), inventoryController.logs);
 adminRouter.use('/inventory', inventory);
+
+// Đơn hàng
+const orders = Router();
+orders.use(requirePermission(P.ORDER_MANAGE));
+orders.get('/', validate({ query: adminOrderQuery }), orderController.listAdmin);
+orders.get('/:id', validate({ params: idParam }), orderController.getAdmin);
+orders.patch('/:id/status', validate({ params: idParam, body: orderStatusSchema }), orderController.changeStatus);
+adminRouter.use('/orders', orders);
+
+// Đánh giá
+const reviews = Router();
+reviews.use(requirePermission(P.REVIEW_MANAGE));
+reviews.get('/', validate({ query: adminReviewQuery }), reviewController.listAdmin);
+reviews.patch('/:id/visibility', validate({ params: idParam, body: reviewVisibilitySchema }), reviewController.setHidden);
+adminRouter.use('/reviews', reviews);
 
 // Cấu hình & upload
 adminRouter.get('/settings', requirePermission(P.SETTING_MANAGE), settingController.get);

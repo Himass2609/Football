@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from './middlewares/error-handler.js';
 import { UPLOAD_DIR } from './middlewares/upload.js';
 import { adminRouter } from './routes/admin.routes.js';
 import { accountRouter, authRouter } from './routes/auth.routes.js';
+import { customerRouter } from './routes/customer.routes.js';
 import { publicRouter } from './routes/public.routes.js';
 
 const CLIENT_DIR = path.resolve(import.meta.dirname, '../../client');
@@ -39,6 +40,7 @@ app.get('/api/v1/health', (_req, res) => res.json({ success: true, data: { statu
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/account', accountRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1', customerRouter);
 app.use('/api/v1', publicRouter);
 app.use('/api', notFoundHandler);
 
