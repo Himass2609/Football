@@ -47,3 +47,29 @@ export const LOW_STOCK_THRESHOLD = 5;
 export const INVENTORY_REASONS = Object.freeze({ IMPORT: 'IMPORT', ADJUST: 'ADJUST', ORDER: 'ORDER', CANCEL: 'CANCEL' });
 
 export const OTP =Object.freeze({ LENGTH: 6, TTL_MINUTES: 10, MAX_ATTEMPTS: 5, RESEND_SECONDS: 60 });
+
+// ───────── Đơn hàng & thanh toán (Phase 3) ─────────
+export const ORDER_STATUS = Object.freeze({
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PROCESSING: 'PROCESSING',
+  SHIPPING: 'SHIPPING',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+});
+// Chuyển trạng thái hợp lệ (CLAUDE.md mục 5.6); khách chỉ hủy được khi PENDING
+export const ORDER_TRANSITIONS = Object.freeze({
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['PROCESSING', 'CANCELLED'],
+  PROCESSING: ['SHIPPING'],
+  SHIPPING: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: [],
+});
+export const PAYMENT_METHODS = Object.freeze({ COD: 'COD', ONLINE: 'ONLINE' });
+// Order.paymentStatus: UNPAID → PAID (COD khi giao xong, ONLINE khi cổng báo thành công) · FAILED cho phép trả lại · REFUNDED khi hủy đơn đã trả
+export const ORDER_PAYMENT_STATUS = Object.freeze({ UNPAID: 'UNPAID', PAID: 'PAID', FAILED: 'FAILED', REFUNDED: 'REFUNDED' });
+// Payment.status theo từng lần thanh toán
+export const PAYMENT_STATUS = Object.freeze({ PENDING: 'PENDING', SUCCESS: 'SUCCESS', FAILED: 'FAILED', CANCELLED: 'CANCELLED' });
+export const MAX_CART_QTY = 10;
+export const MAX_ADDRESSES = 10;
