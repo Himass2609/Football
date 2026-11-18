@@ -1,6 +1,7 @@
 // Header, footer, menu mobile — gắn vào mọi trang storefront
 import { api } from './api.js';
 import { getUser, isAdmin, logout } from './auth.js';
+import { refreshCartCount } from './cart-store.js';
 import { hydrateIcons } from './icons-auto.js';
 import { $, escapeHtml, html, icon, raw, togglePasswordButtons } from './ui.js';
 
@@ -208,7 +209,14 @@ export function mountLayout() {
     loadMegaMenu(header);
     window.addEventListener('auth:change', () => {
       $('[data-account]', header).innerHTML = accountMenu();
+      refreshCartCount();
     });
+    window.addEventListener('cart:change', (e) => {
+      const badge = $('[data-cart-count]', header);
+      badge.textContent = e.detail.count > 99 ? '99+' : e.detail.count;
+      badge.hidden = !e.detail.count;
+    });
+    refreshCartCount();
   }
   if (footer) {
     footer.innerHTML = footerHtml();

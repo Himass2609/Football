@@ -222,6 +222,69 @@
 .pill-blue { background: var(--c-info-soft); color: var(--c-info); }
 .pill-violet { background: var(--c-violet-soft); color: var(--c-violet); }
 
+/* ───────── Bộ chọn số lượng ───────── */
+.qty {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius-sm);
+}
+
+.qty button {
+  width: 44px;
+  height: 100%;
+  font-size: 1.125rem;
+  color: var(--c-ink);
+}
+
+.qty button:disabled {
+  color: var(--c-subtle);
+  cursor: not-allowed;
+}
+
+.qty input {
+  width: 48px;
+  height: 100%;
+  border: 0;
+  border-inline: 1px solid var(--c-line);
+  text-align: center;
+  font-weight: 700;
+  -moz-appearance: textfield;
+}
+
+.qty input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.qty-sm {
+  height: 36px;
+}
+
+.qty-sm button {
+  width: 32px;
+  font-size: 1rem;
+}
+
+.qty-sm input {
+  width: 40px;
+}
+
+/* ───────── Sao đánh giá ───────── */
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--c-accent);
+}
+
+.stars svg {
+  fill: currentColor;
+}
+
+.stars .off {
+  color: var(--c-line-strong);
+}
+
 /* ───────── Form ───────── */
 .field {
   display: flex;
