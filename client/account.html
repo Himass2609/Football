@@ -41,8 +41,8 @@
           <nav aria-label="Mục tài khoản">
             <button class="account-link" type="button" data-tab="profile" aria-current="true" data-icon="user">Hồ sơ cá nhân</button>
             <button class="account-link" type="button" data-tab="security" data-icon="key">Đổi mật khẩu</button>
-            <button class="account-link" type="button" data-tab="orders" data-icon="bag">Đơn hàng<span class="soon">Sắp có</span></button>
-            <button class="account-link" type="button" data-tab="addresses" data-icon="truck">Sổ địa chỉ<span class="soon">Sắp có</span></button>
+            <button class="account-link" type="button" data-tab="orders" data-icon="bag">Đơn hàng</button>
+            <button class="account-link" type="button" data-tab="addresses" data-icon="map-pin">Sổ địa chỉ</button>
             <button class="account-link" type="button" data-logout data-icon="log-out">Đăng xuất</button>
           </nav>
         </aside>
@@ -120,12 +120,29 @@
             </div>
           </section>
 
-          <!-- Phase 3 -->
+          <!-- Đơn hàng -->
           <section class="card" data-panel="orders" hidden>
-            <div class="card-body" data-soon="bag|Đơn hàng của bạn|Chức năng đặt hàng & theo dõi đơn sẽ có ở Phase 3."></div>
+            <div class="card-body">
+              <h2 class="display panel-title">Đơn hàng của tôi</h2>
+              <p class="panel-sub">Theo dõi trạng thái, thanh toán và đánh giá sản phẩm đã mua.</p>
+              <div class="chips mt-4" data-order-filter role="group" aria-label="Lọc theo trạng thái"></div>
+              <div class="mt-4" data-orders aria-live="polite"></div>
+              <div class="pagination mt-4" data-orders-pagination></div>
+            </div>
           </section>
+
+          <!-- Sổ địa chỉ -->
           <section class="card" data-panel="addresses" hidden>
-            <div class="card-body" data-soon="truck|Sổ địa chỉ|Quản lý địa chỉ giao hàng sẽ có ở Phase 3."></div>
+            <div class="card-body">
+              <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                  <h2 class="display panel-title">Sổ địa chỉ</h2>
+                  <p class="panel-sub">Tối đa 10 địa chỉ. Địa chỉ mặc định được chọn sẵn khi thanh toán.</p>
+                </div>
+                <button class="btn btn-dark btn-sm" type="button" data-add-address data-icon="plus">Thêm địa chỉ</button>
+              </div>
+              <div class="mt-4" data-addresses aria-live="polite"></div>
+            </div>
           </section>
         </div>
       </div>
