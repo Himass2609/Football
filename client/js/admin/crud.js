@@ -290,7 +290,10 @@ export function createCrudPage(config) {
     emptyIcon = 'layers',
   } = config;
 
-  const state = { page: 1, q: '', filters: {}, rows: [] };
+  // Bộ lọc khởi tạo từ URL (vd: orders.html?status=PENDING từ dashboard)
+  const params = new URLSearchParams(location.search);
+  const initialFilters = Object.fromEntries(filters.map((f) => [f.name, params.get(f.name) ?? '']).filter(([, v]) => v));
+  const state = { page: 1, q: '', filters: initialFilters, rows: [] };
 
   root.innerHTML = html`
     <div class="card">
@@ -303,7 +306,7 @@ export function createCrudPage(config) {
         ${filters.map((f) =>
           raw(html`<select class="select" data-filter="${f.name}" aria-label="${f.label}">
             <option value="">${f.label}</option>
-            ${f.options.map((o) => raw(html`<option value="${o.value}">${o.label}</option>`))}
+            ${f.options.map((o) => raw(html`<option value="${o.value}" ${String(o.value) === state.filters[f.name] ? raw('selected') : ''}>${o.label}</option>`))}
           </select>`),
         )}
         ${canCreate ? raw(html`<button class="btn btn-dark btn-sm ms-auto" type="button" data-create>${raw(icon('plus', 16))}${createLabel}</button>`) : ''}

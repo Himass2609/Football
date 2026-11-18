@@ -6,6 +6,13 @@ import { $, html, icon, raw, togglePasswordButtons } from '../ui.js';
 const NAV = [
   { title: 'Tổng quan', items: [{ href: '/admin/', icon: 'dashboard', label: 'Bảng điều khiển', key: 'overview' }] },
   {
+    title: 'Bán hàng',
+    items: [
+      { href: '/admin/orders.html', icon: 'receipt', label: 'Đơn hàng', key: 'orders' },
+      { href: '/admin/reviews.html', icon: 'star', label: 'Đánh giá', key: 'reviews' },
+    ],
+  },
+  {
     title: 'Người dùng',
     items: [
       { href: '/admin/users.html', icon: 'users', label: 'Tài khoản', key: 'users' },

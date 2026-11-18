@@ -606,3 +606,101 @@ body.admin {
     grid-column: auto;
   }
 }
+
+/* ───────── Dashboard: khoảng thời gian, biểu đồ, trạng thái đơn ───────── */
+.range-row {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.kpi-hint a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chart {
+  position: relative;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart .grid line {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+
+.chart text {
+  fill: var(--c-muted);
+  font-size: 11px;
+  font-family: var(--font-body);
+}
+
+.chart .bar path {
+  fill: var(--c-ink);
+  transition: fill 120ms var(--ease);
+}
+
+.chart .bar .hit {
+  fill: transparent;
+}
+
+.chart .bar.active path {
+  fill: var(--c-accent);
+}
+
+.chart-tooltip {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  min-width: 150px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  background: var(--c-ink);
+  color: var(--c-on-dark);
+  font-size: var(--fs-small);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.status-list {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-list li {
+  display: grid;
+  grid-template-columns: 120px 1fr 36px;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+.status-list b {
+  text-align: right;
+  color: var(--c-ink);
+}
+
+.status-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--c-surface-2);
+}
+
+.status-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--c-ink);
+}
