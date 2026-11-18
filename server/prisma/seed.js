@@ -699,6 +699,187 @@ async function seedProducts() {
   });
 }
 
+// ───────── Đơn hàng mẫu (Phase 3) — chỉ tạo khi DB chưa có đơn ─────────
+const DEMO_CUSTOMERS = [
+  ['minh.tran@jersey.vn', 'Trần Quang Minh', '0911000001', ['12 Trần Duy Hưng', 'Trung Hòa', 'Cầu Giấy', 'Hà Nội']],
+  ['lan.pham@jersey.vn', 'Phạm Thị Lan', '0911000002', ['88 Lê Lợi', 'Bến Nghé', 'Quận 1', 'TP. Hồ Chí Minh']],
+  ['duc.le@jersey.vn', 'Lê Anh Đức', '0911000003', ['45 Nguyễn Văn Linh', 'Hải Châu 1', 'Hải Châu', 'Đà Nẵng']],
+  ['hoa.nguyen@jersey.vn', 'Nguyễn Thu Hoa', '0911000004', ['7 Lạch Tray', 'Lạch Tray', 'Ngô Quyền', 'Hải Phòng']],
+  ['tuan.vu@jersey.vn', 'Vũ Minh Tuấn', '0911000005', ['21 Hùng Vương', 'Phú Hội', 'Thuận Hóa', 'Huế']],
+];
+const DEMO_ADDRESS = ['55 Giải Phóng', 'Đồng Tâm', 'Hai Bà Trưng', 'Hà Nội'];
+const REVIEW_TEXTS = [
+  [5, 'Áo đẹp y hình, vải mát, form chuẩn. Giao hàng nhanh, đóng gói cẩn thận.'],
+  [5, 'Hàng chính hãng, tem mác đầy đủ. Sẽ ủng hộ shop tiếp.'],
+  [5, 'Mặc đi đá bóng rất thoáng, thấm hút mồ hôi tốt.'],
+  [4, 'Chất lượng tốt, size hơi rộng một chút so với bảng size.'],
+  [4, 'Đẹp, đúng mô tả. Giao chậm hơn dự kiến 1 ngày.'],
+  [5, 'Màu sắc chuẩn, in logo sắc nét. Rất hài lòng!'],
+  [3, 'Sản phẩm ổn nhưng hộp bị móp nhẹ khi nhận.'],
+  [5, null],
+];
+const FLOW = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPING', 'DELIVERED'];
+
+async function seedCustomers() {
+  const role = await prisma.role.findUnique({ where: { code: ROLES.CUSTOMER } });
+  const passwordHash = await bcrypt.hash('Customer@123', 10);
+  const customers = [];
+  for (const [email, fullName, phone, address] of [['customer@jersey.vn', 'Nguyễn Văn Khách', '0912345678', DEMO_ADDRESS], ...DEMO_CUSTOMERS]) {
+    let account = await prisma.account.findUnique({ where: { email }, include: { customer: true } });
+    if (!account) {
+      account = await prisma.account.create({
+        data: { email, passwordHash, roleId: role.id, createdAt: days(-Math.floor(pseudo(phone.length + email.length) * 50) - 5), customer: { create: { fullName, phone, cart: { create: {} } } } },
+        include: { customer: true },
+      });
+    }
+    const customer = account.customer;
+    if (!(await prisma.address.count({ where: { customerId: customer.id } }))) {
+      const [line, ward, district, province] = address;
+      await prisma.address.create({ data: { customerId: customer.id, receiverName: fullName, phone, line, ward, district, province, isDefault: true } });
+    }
+    customers.push({ ...customer, accountId: account.id, address: await prisma.address.findFirst({ where: { customerId: customer.id, isDefault: true } }) });
+  }
+  return customers;
+}
+
+async function seedOrders() {
+  const customers = await seedCustomers();
+  if (await prisma.order.count()) return;
+
+  const admin = await prisma.account.findUnique({ where: { email: 'admin@jersey.vn' } });
+  const variants = await prisma.productVariant.findMany({
+    where: { isActive: true, stockQuantity: { gte: 5 }, product: { status: 'ACTIVE', deletedAt: null } },
+    include: {
+      size: true,
+      color: true,
+      product: { select: { id: true, name: true, basePrice: true, salePrice: true, images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], take: 1, select: { url: true } } } },
+    },
+    orderBy: { id: 'asc' },
+  });
+  const settings = await prisma.systemSetting.findFirst();
+  const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const hoursLater = (date, h) => new Date(date.getTime() + h * 3600 * 1000);
+  const ratingTouched = new Set();
+
+  for (let n = 0; n < 64; n += 1) {
+    const r = (k) => pseudo(n * 17 + k);
+    const ageDays = Math.floor(r(1) * 60);
+    const createdAt = new Date(days(-ageDays).getTime() - Math.floor(r(2) * 10) * 3600 * 1000);
+    // Đơn cũ phần lớn đã giao; đơn vài ngày gần đây còn đang xử lý
+    let status;
+    if (r(3) < 0.1) status = 'CANCELLED';
+    else if (ageDays > 6) status = 'DELIVERED';
+    else status = FLOW[Math.min(4, Math.floor(r(4) * (ageDays + 2)))];
+    const paymentMethod = r(5) < 0.7 ? 'COD' : 'ONLINE';
+    const customer = customers[Math.floor(r(6) * customers.length)];
+
+    const lines = [];
+    for (let l = 0; l < 1 + Math.floor(r(7) * 3); l += 1) {
+      const v = variants[Math.floor(r(10 + l) * variants.length)];
+      if (lines.some((x) => x.v.id === v.id)) continue;
+      const quantity = 1 + Math.floor(r(20 + l) * 2);
+      if (v.stockQuantity < quantity + 2) continue;
+      const unitPrice = Number(v.price ?? v.product.salePrice ?? v.product.basePrice);
+      lines.push({ v, quantity, unitPrice, lineTotal: unitPrice * quantity });
+    }
+    if (!lines.length) continue;
+
+    const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
+    const shippingFee = subtotal >= Number(settings.freeShipThreshold) ? 0 : Number(settings.shippingFee);
+    const total = subtotal + shippingFee;
+    const d = createdAt;
+    const orderCode = `JS${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}${[30, 31, 32].map((k) => CODE_CHARS[Math.floor(r(k) * CODE_CHARS.length)]).join('')}${CODE_CHARS[n % CODE_CHARS.length]}`;
+
+    // Lịch sử trạng thái: mỗi bước cách nhau vài giờ
+    const reached = status === 'CANCELLED' ? ['PENDING'] : FLOW.slice(0, FLOW.indexOf(status) + 1);
+    const history = reached.map((s, i) => ({
+      fromStatus: i ? reached[i - 1] : null,
+      toStatus: s,
+      note: i ? null : 'Khách đặt hàng',
+      changedById: i ? admin.id : customer.accountId,
+      changedAt: hoursLater(createdAt, i * 14),
+    }));
+    if (status === 'CANCELLED') history.push({ fromStatus: 'PENDING', toStatus: 'CANCELLED', note: 'Khách đổi ý', changedById: customer.accountId, changedAt: hoursLater(createdAt, 3) });
+    const deliveredAt = status === 'DELIVERED' ? history.at(-1).changedAt : null;
+    const paid = status === 'DELIVERED' || (paymentMethod === 'ONLINE' && status !== 'CANCELLED');
+
+    const order = await prisma.order.create({
+      data: {
+        orderCode,
+        customerId: customer.id,
+        status,
+        paymentStatus: paid ? 'PAID' : 'UNPAID',
+        paymentMethod,
+        subtotal,
+        shippingFee,
+        total,
+        receiverName: customer.address.receiverName,
+        receiverPhone: customer.address.phone,
+        shippingAddress: [customer.address.line, customer.address.ward, customer.address.district, customer.address.province].join(', '),
+        cancelReason: status === 'CANCELLED' ? 'Khách đổi ý' : null,
+        cancelledAt: status === 'CANCELLED' ? history.at(-1).changedAt : null,
+        deliveredAt,
+        createdAt,
+        details: {
+          create: lines.map((l) => ({
+            variantId: l.v.id,
+            productId: l.v.product.id,
+            productName: l.v.product.name,
+            sizeName: l.v.size.name,
+            colorName: l.v.color.name,
+            imageUrl: l.v.product.images[0]?.url ?? null,
+            unitPrice: l.unitPrice,
+            quantity: l.quantity,
+            lineTotal: l.lineTotal,
+          })),
+        },
+        history: { create: history },
+        payments: {
+          create: {
+            method: paymentMethod,
+            amount: total,
+            status: paid ? 'SUCCESS' : status === 'CANCELLED' ? 'CANCELLED' : 'PENDING',
+            transactionRef: paid ? (paymentMethod === 'COD' ? `COD-${orderCode}` : `SANDBOX-SEED${n}`) : null,
+            paidAt: paid ? (deliveredAt ?? hoursLater(createdAt, 0.1)) : null,
+            createdAt,
+          },
+        },
+      },
+    });
+
+    // Trừ kho + log (đơn hủy thì hoàn lại ngay)
+    for (const l of lines) {
+      l.v.stockQuantity -= l.quantity;
+      await prisma.productVariant.update({ where: { id: l.v.id }, data: { stockQuantity: l.v.stockQuantity } });
+      await prisma.inventoryLog.create({ data: { variantId: l.v.id, change: -l.quantity, stockAfter: l.v.stockQuantity, reason: 'ORDER', orderId: order.id, createdById: customer.accountId, createdAt } });
+      if (status === 'CANCELLED') {
+        l.v.stockQuantity += l.quantity;
+        await prisma.productVariant.update({ where: { id: l.v.id }, data: { stockQuantity: l.v.stockQuantity } });
+        await prisma.inventoryLog.create({ data: { variantId: l.v.id, change: l.quantity, stockAfter: l.v.stockQuantity, reason: 'CANCEL', orderId: order.id, note: `Hủy đơn ${orderCode}`, createdById: customer.accountId, createdAt: history.at(-1).changedAt } });
+      } else {
+        await prisma.product.update({ where: { id: l.v.product.id }, data: { soldCount: { increment: l.quantity } } });
+      }
+    }
+
+    // Khoảng 60% sản phẩm trong đơn đã giao có đánh giá
+    if (status === 'DELIVERED') {
+      for (const [i, l] of lines.entries()) {
+        if (r(40 + i) > 0.6) continue;
+        const exists = await prisma.review.findUnique({ where: { customerId_productId_orderId: { customerId: customer.id, productId: l.v.product.id, orderId: order.id } } });
+        if (exists) continue;
+        const [rating, content] = REVIEW_TEXTS[Math.floor(r(50 + i) * REVIEW_TEXTS.length)];
+        await prisma.review.create({ data: { customerId: customer.id, productId: l.v.product.id, orderId: order.id, rating, content, createdAt: hoursLater(deliveredAt, 20) } });
+        ratingTouched.add(l.v.product.id);
+      }
+    }
+  }
+
+  for (const productId of ratingTouched) {
+    const agg = await prisma.review.aggregate({ where: { productId, isHidden: false }, _avg: { rating: true }, _count: true });
+    await prisma.product.update({ where: { id: productId }, data: { ratingAvg: Math.round((agg._avg.rating ?? 0) * 10) / 10, ratingCount: agg._count } });
+  }
+}
+
 async function seedSettings() {
   if (await prisma.systemSetting.count()) return;
   await prisma.systemSetting.create({
@@ -721,6 +902,7 @@ async function main() {
   await seedNews();
   await seedSettings();
   await seedProducts();
+  await seedOrders();
   console.info('✔ Seed dữ liệu mẫu hoàn tất');
 }
 
