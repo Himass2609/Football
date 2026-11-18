@@ -192,3 +192,22 @@
     gap: var(--sp-6) var(--sp-3);
   }
 }
+
+.product-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+.product-rating svg {
+  color: var(--c-accent);
+  fill: currentColor;
+}
+
+.product-rating span {
+  font-weight: 400;
+  color: var(--c-muted);
+}

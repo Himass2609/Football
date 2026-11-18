@@ -1,7 +1,8 @@
 import { api } from '../api.js';
 import { initPage } from '../layout.js';
 import { priceHtml, productArt, productCard } from '../product-card.js';
-import { $, emptyState, formatDate, getParam, html, icon, raw, toast } from '../ui.js';
+import { addToCart } from '../cart-store.js';
+import { $, emptyState, formatDate, getParam, html, icon, raw, setLoading, toast } from '../ui.js';
 
 initPage();
 
@@ -140,16 +141,28 @@ function bindInteractions() {
       guide.open = true;
       guide.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    if (e.target.closest('[data-add]')) {
-      if (!selection.sizeId || !selection.colorId) return toast('Vui lòng chọn màu và size', 'error');
-      // Giỏ hàng làm ở Phase 3 (Sprint 6)
-      toast('Giỏ hàng sẽ có ở Phase 3 — bạn đã chọn đúng biến thể còn hàng.', 'info');
-    }
+    const addBtn = e.target.closest('[data-add]');
+    if (addBtn) handleAdd(addBtn);
   });
   $('[data-qty]').addEventListener('change', (e) => {
     selection.qty = Number(e.target.value) || 1;
     renderOptions();
   });
+}
+
+async function handleAdd(button) {
+  if (!selection.sizeId || !selection.colorId) return toast('Vui lòng chọn màu và size', 'error');
+  const variant = variantOf(selection.sizeId, selection.colorId);
+  if (!variant) return toast('Phân loại này không có sẵn', 'error');
+  setLoading(button, true);
+  try {
+    const cart = await addToCart(variant.id, selection.qty);
+    if (cart) toast(`Đã thêm vào giỏ hàng (${cart.itemCount} sản phẩm)`, 'success');
+  } catch (err) {
+    toast(err.message, 'error');
+  } finally {
+    setLoading(button, false);
+  }
 }
 
 // ───────── Trang ─────────
@@ -242,7 +255,50 @@ function render() {
     $('[data-related-section]').hidden = false;
     $('[data-related]').innerHTML = product.related.map(productCard).join('');
   }
+  loadReviews();
 }
+
+// ───────── Đánh giá ─────────
+const reviewState = { page: 1, items: [] };
+const stars = (rating, size = 16) =>
+  `<span class="stars" aria-label="${rating} trên 5 sao">${[1, 2, 3, 4, 5].map((i) => `<span class="${i <= Math.round(rating) ? '' : 'off'}">${icon('star', size)}</span>`).join('')}</span>`;
+
+async function loadReviews(page = 1) {
+  const box = $('[data-reviews]');
+  $('[data-reviews-section]').hidden = false;
+  try {
+    const { data, meta } = await api.get(`/products/${encodeURIComponent(product.slug)}/reviews`, { page, limit: 5 });
+    reviewState.page = page;
+    reviewState.items = page === 1 ? data : [...reviewState.items, ...data];
+    const max = Math.max(1, ...Object.values(meta.distribution));
+    box.innerHTML = html`
+      <aside class="review-summary">
+        <p class="review-avg">${meta.ratingCount ? meta.ratingAvg.toFixed(1) : '—'}<small>/5</small></p>
+        ${raw(stars(meta.ratingAvg, 18))}
+        <p class="cell-sub mt-1">${meta.ratingCount} đánh giá</p>
+        <ul class="review-bars">${[5, 4, 3, 2, 1].map((r) =>
+          raw(html`<li><span>${r}${raw(icon('star', 12))}</span><span class="review-bar"><span style="width:${Math.round((meta.distribution[r] / max) * 100)}%"></span></span><span>${meta.distribution[r]}</span></li>`),
+        )}</ul>
+      </aside>
+      <div>
+        ${reviewState.items.length
+          ? raw(reviewState.items.map((r) => html`
+              <article class="review">
+                <div class="review-head">${raw(stars(r.rating, 14))}<b>${r.reviewer}</b><span class="cell-sub">${formatDate(r.createdAt)}</span></div>
+                ${r.variant ? raw(html`<p class="cell-sub">Phân loại: ${r.variant} · <span class="verified">${raw(icon('badge-check', 14))}Đã mua hàng</span></p>`) : ''}
+                ${r.content ? raw(html`<p class="review-content">${r.content}</p>`) : ''}
+              </article>`).join(''))
+          : raw(emptyState('star', 'Chưa có đánh giá', 'Khách đã mua và nhận hàng có thể đánh giá trong trang Đơn hàng.'))}
+        ${meta.page < meta.totalPages ? raw('<button type="button" class="btn btn-outline btn-sm mt-4" data-more-reviews>Xem thêm đánh giá</button>') : ''}
+      </div>`;
+  } catch {
+    $('[data-reviews-section]').hidden = true;
+  }
+}
+
+$('[data-reviews]').addEventListener('click', (e) => {
+  if (e.target.closest('[data-more-reviews]')) loadReviews(reviewState.page + 1);
+});
 
 try {
   const slug = getParam('slug');

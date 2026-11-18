@@ -1,5 +1,5 @@
 import { jerseySvg, teamJersey } from './jersey.js';
-import { formatCurrency, html, raw } from './ui.js';
+import { formatCurrency, html, icon, raw } from './ui.js';
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 const colorDistance = (a, b) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]));
@@ -53,6 +53,7 @@ export function productCard(p) {
         ${meta ? raw(html`<span class="product-meta">${meta}</span>`) : ''}
         <a class="product-name" href="/product.html?slug=${encodeURIComponent(p.slug)}">${p.name}</a>
         ${raw(priceHtml(p))}
+        ${p.ratingCount ? raw(html`<span class="product-rating">${raw(icon('star', 12))}${p.ratingAvg.toFixed(1)}<span>(${p.ratingCount})</span></span>`) : ''}
         ${p.colors?.length > 1
           ? raw(html`<span class="product-swatches" aria-label="${p.colors.length} màu">${p.colors.slice(0, 4).map((c) => raw(html`<i style="background:${c.hex}" title="${c.name}"></i>`))}${p.colors.length > 4 ? raw(html`<span>+${p.colors.length - 4}</span>`) : ''}</span>`)
           : ''}

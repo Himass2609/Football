@@ -410,40 +410,6 @@
 .stock-line.low { color: var(--c-warning); }
 .stock-line.out { color: var(--c-danger); }
 
-.qty {
-  display: inline-flex;
-  align-items: center;
-  height: 48px;
-  border: 1px solid var(--c-line-strong);
-  border-radius: var(--radius-sm);
-}
-
-.qty button {
-  width: 44px;
-  height: 100%;
-  font-size: 1.125rem;
-  color: var(--c-ink);
-}
-
-.qty button:disabled {
-  color: var(--c-subtle);
-  cursor: not-allowed;
-}
-
-.qty input {
-  width: 48px;
-  height: 100%;
-  border: 0;
-  border-inline: 1px solid var(--c-line);
-  text-align: center;
-  font-weight: 700;
-  -moz-appearance: textfield;
-}
-
-.qty input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-}
-
 .buy-row {
   display: flex;
   gap: var(--sp-3);
@@ -621,5 +587,108 @@
 
   .buy-row {
     flex-direction: column;
+  }
+}
+
+/* ───────── Đánh giá ───────── */
+.reviews-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: start;
+}
+
+.review-summary {
+  padding: var(--sp-6);
+  border-radius: var(--radius-md);
+  background: var(--c-surface-2);
+}
+
+.review-avg {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--c-ink);
+}
+
+.review-avg small {
+  font-size: 1rem;
+  color: var(--c-muted);
+}
+
+.review-bars {
+  display: grid;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-small);
+}
+
+.review-bars li {
+  display: grid;
+  grid-template-columns: 32px 1fr 28px;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.review-bars li > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.review-bars li > span:last-child {
+  text-align: right;
+  color: var(--c-muted);
+}
+
+.review-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--c-line);
+}
+
+.review-bar span {
+  display: block;
+  height: 100%;
+  background: var(--c-accent);
+}
+
+.review {
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.review:first-child {
+  padding-top: 0;
+}
+
+.review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-1);
+}
+
+.review-content {
+  margin-top: var(--sp-2);
+  line-height: 1.6;
+}
+
+.verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--c-success);
+}
+
+@media (max-width: 767.98px) {
+  .reviews-layout {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
   }
 }
